@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
@@ -43,7 +44,9 @@ export default async function PublicMenuPage({
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, description, price_cents, category_id, sort_order")
+    .select(
+      "id, name, description, price_cents, category_id, sort_order, image_url",
+    )
     .eq("menu_id", menu.id)
     .eq("is_available", true)
     .order("sort_order", { ascending: true });
@@ -81,8 +84,17 @@ export default async function PublicMenuPage({
             </summary>
             <ul className="flex flex-col divide-y divide-neutral-100 pb-2">
               {group.items.map((p) => (
-                <li key={p.id} className="flex justify-between gap-4 py-3">
-                  <div className="min-w-0">
+                <li key={p.id} className="flex gap-3 py-3">
+                  {p.image_url && (
+                    <Image
+                      src={p.image_url}
+                      alt={p.name}
+                      width={64}
+                      height={64}
+                      className="h-16 w-16 shrink-0 rounded-md object-cover"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium">{p.name}</p>
                     {p.description && (
                       <p className="mt-0.5 text-sm text-neutral-600">
@@ -117,6 +129,7 @@ type Prod = {
   price_cents: number;
   category_id: string | null;
   sort_order: number;
+  image_url: string | null;
 };
 
 function groupByCategory(categories: Cat[], products: Prod[]) {

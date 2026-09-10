@@ -9,7 +9,11 @@ Pegá y ejecutá **en orden**:
 1. `migrations/0001_init.sql`
 2. `migrations/0002_rls.sql`
 3. `migrations/0003_triggers.sql`
-4. `seed.sql` (opcional, datos demo)
+4. `migrations/0004_storage.sql` (bucket de imágenes de producto)
+5. `seed.sql` (opcional, datos demo)
+
+> Si ya tenías la base creada, para sumar solo las imágenes corré
+> `migrations/0004_storage.sql` suelto (es idempotente).
 
 ### Opción B — Supabase CLI (recomendado cuando el esquema se estabilice)
 

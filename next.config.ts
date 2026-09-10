@@ -1,10 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Cuando agreguemos Supabase Storage para imágenes de productos,
-  // aquí habilitaremos el dominio del bucket en `images.remotePatterns`.
   images: {
-    remotePatterns: [],
+    // Imágenes de producto servidas desde Supabase Storage (bucket público).
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
 };
 

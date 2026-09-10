@@ -50,19 +50,30 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   (placeholder, valores en `subscriptions.plan`), `planLabel`, estados de
   suscripción y sus etiquetas. Módulo plano (sin `use server`) para usarlo en
   actions y en componentes cliente.
+- **Imágenes de producto (Supabase Storage):** bucket público `product-images`,
+  ruta `<local_id>/<product_id>` (1 objeto por producto, sin extensión). Subida y
+  borrado en las server actions de `/admin/products` con el cliente normal (las
+  políticas de `storage.objects` dejan escribir solo en la carpeta del propio
+  local vía `public.owns_local`). `products.image_url` guarda la URL pública con
+  `?t=<ts>` para bustear caché tras un reemplazo. Config de dominios en
+  `next.config.ts` (`images.remotePatterns` -> `*.supabase.co`). Helpers y límites
+  en `src/lib/images.ts` (JPG/PNG/WebP, 3 MB). Se muestran en `/admin/products`
+  (miniatura + reemplazo/quitar en la edición) y en `/m/[slug]` (miniatura 64px).
 - **Página pública (`/m/[slug]`):** SSR, mobile-first, cache 30s, sin login.
   Categorías **desplegables** (`<details>` nativo, sin JS de cliente; la primera
   abierta). RLS oculta locales suspendidos / menús no publicados / productos no disponibles.
-- **DB:** `supabase/migrations/0001_init.sql`, `0002_rls.sql`, `0003_triggers.sql`
-  + `seed.sql`. `supabase/setup.sql` es la concatenación de los 4 para pegar de
-  una en el SQL Editor.
+- **DB:** `supabase/migrations/0001_init.sql`, `0002_rls.sql`, `0003_triggers.sql`,
+  `0004_storage.sql` + `seed.sql`. `supabase/setup.sql` es la concatenación de
+  todo para pegar de una en el SQL Editor.
 
 Pendiente (en este orden sugerido):
 
 1. Editar nombre/moneda del local desde `/admin/settings` (hoy solo lectura).
-2. **Módulo de pagos** (tótem + mensualidad, webhook, job que suspende por impago). Fuera de alcance hasta que se pida.
-4. **Subida de imágenes** de productos con Supabase Storage (la columna `products.image_url` ya existe). Fuera de alcance hasta que se pida.
-5. Generar el QR y grabar el NFC apuntando a `/m/[slug]`.
+2. Feedback de errores en los formularios (hoy una acción que falla tira la
+   pantalla de error de Next; pasar a mensaje inline con `useActionState` como en
+   el login).
+3. Generar el QR y grabar el NFC apuntando a `/m/[slug]`.
+4. **Módulo de pagos** (tótem + mensualidad, webhook, job que suspende por impago). Fuera de alcance hasta que se pida.
 
 ## Modelo de datos
 

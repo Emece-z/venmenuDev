@@ -16,7 +16,7 @@ export default async function ProductsPage() {
     supabase
       .from("products")
       .select(
-        "id, name, description, price_cents, category_id, is_available, sort_order",
+        "id, name, description, price_cents, category_id, is_available, sort_order, image_url",
       )
       .eq("menu_id", menu?.id ?? "")
       .order("sort_order", { ascending: true }),
@@ -74,6 +74,15 @@ export default async function ProductsPage() {
           <label className="flex items-center gap-2 self-end text-sm">
             <input type="checkbox" name="is_available" defaultChecked />
             Disponible
+          </label>
+          <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+            <span className="text-neutral-500">Imagen (JPG/PNG/WebP, máx. 3 MB)</span>
+            <input
+              type="file"
+              name="image"
+              accept="image/jpeg,image/png,image/webp"
+              className="text-sm"
+            />
           </label>
           <div className="sm:col-span-2">
             <button className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white">

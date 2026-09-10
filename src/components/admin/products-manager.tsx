@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { formatPrice } from "@/lib/format";
 import { centsToInput } from "@/lib/money";
 import {
@@ -18,6 +19,7 @@ type Product = {
   category_id: string | null;
   is_available: boolean;
   sort_order: number;
+  image_url: string | null;
 };
 
 type SortKey = "name" | "category" | "price" | "available";
@@ -212,7 +214,22 @@ function Row({
   return (
     <>
       <tr className="border-b border-neutral-100 align-top">
-        <td className="py-2 pr-4 font-medium">{p.name}</td>
+        <td className="py-2 pr-4">
+          <div className="flex items-center gap-2">
+            {p.image_url ? (
+              <Image
+                src={p.image_url}
+                alt={p.name}
+                width={36}
+                height={36}
+                className="h-9 w-9 shrink-0 rounded object-cover"
+              />
+            ) : (
+              <span className="h-9 w-9 shrink-0 rounded bg-neutral-100" />
+            )}
+            <span className="font-medium">{p.name}</span>
+          </div>
+        </td>
         <td className="py-2 pr-4 text-neutral-600">{catLabel}</td>
         <td className="py-2 pr-4 text-right tabular-nums">
           {formatPrice(p.price_cents, currency)}
@@ -309,6 +326,43 @@ function Row({
                 />
                 Disponible
               </label>
+
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <span className="text-sm text-neutral-500">Imagen</span>
+                <div className="flex items-center gap-3">
+                  {p.image_url ? (
+                    <Image
+                      src={p.image_url}
+                      alt={p.name}
+                      width={64}
+                      height={64}
+                      className="h-16 w-16 shrink-0 rounded object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-neutral-100 text-xs text-neutral-400">
+                      sin foto
+                    </span>
+                  )}
+                  <div className="flex flex-col gap-1 text-sm">
+                    <input
+                      type="file"
+                      name="image"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="text-sm"
+                    />
+                    {p.image_url && (
+                      <label className="flex items-center gap-2 text-xs text-neutral-600">
+                        <input type="checkbox" name="remove_image" />
+                        Quitar imagen actual
+                      </label>
+                    )}
+                    <span className="text-xs text-neutral-400">
+                      JPG/PNG/WebP, máx. 3 MB
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="sm:col-span-2">
                 <button className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white">
                   Guardar
