@@ -6,6 +6,8 @@
 // cada Row/Insert/Update sea asignable a `Record<string, unknown>`, y las
 // `interface` de TS no traen index signature implícita -> darían `never`.
 
+import type { WeekHours } from "@/lib/hours";
+
 export type UserRole = "owner" | "super_admin";
 export type LocalStatus = "active" | "suspended";
 export type SubscriptionStatus = "trialing" | "active" | "past_due" | "canceled";
@@ -23,6 +25,8 @@ export type Local = {
   phone: string | null;
   whatsapp: string | null;
   instagram: string | null;
+  // Horario de atención (0006). jsonb; null = sin configurar.
+  hours: WeekHours | null;
 };
 
 export type Profile = {

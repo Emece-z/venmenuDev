@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getOwnerContext } from "@/lib/owner";
+import { readWeekHoursFromForm, hasMeaningfulHours } from "@/lib/hours";
 import type { SettingsState } from "./state";
 
 const LIMITS = {
@@ -48,6 +49,8 @@ export async function updateLocalSettings(
     return { ok: false, error: `Código de moneda no reconocido: ${currency}` };
   }
 
+  const week = readWeekHoursFromForm(formData);
+
   const { error } = await supabase
     .from("locals")
     .update({
@@ -58,6 +61,7 @@ export async function updateLocalSettings(
       phone: text(formData, "phone", LIMITS.phone),
       whatsapp: text(formData, "whatsapp", LIMITS.whatsapp),
       instagram: text(formData, "instagram", LIMITS.instagram),
+      hours: hasMeaningfulHours(week) ? week : null,
     })
     .eq("id", profile.local_id);
   if (error) return { ok: false, error: error.message };

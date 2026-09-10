@@ -1,6 +1,7 @@
 import { requireOwner } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { planLabel, subStatusLabel } from "@/lib/plans";
+import { parseWeekHours } from "@/lib/hours";
 import { SettingsForm } from "@/components/admin/settings-form";
 
 // Monedas frecuentes en la región + algunas globales. Si el local ya tiene una
@@ -28,7 +29,7 @@ export default async function SettingsPage() {
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "name, slug, status, currency, description, address, phone, whatsapp, instagram",
+      "name, slug, status, currency, description, address, phone, whatsapp, instagram, hours",
     )
     .eq("id", profile.local_id)
     .single();
@@ -57,6 +58,7 @@ export default async function SettingsPage() {
           phone: local?.phone ?? null,
           whatsapp: local?.whatsapp ?? null,
           instagram: local?.instagram ?? null,
+          hours: parseWeekHours(local?.hours ?? null),
         }}
         currencyOptions={currencyOptions}
         zeroDecimal={ZERO_DECIMAL}

@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import { updateLocalSettings } from "@/app/admin/settings/actions";
 import { initialSettingsState } from "@/app/admin/settings/state";
+import { WeekHoursFields } from "@/components/admin/week-hours-fields";
+import type { WeekHours } from "@/lib/hours";
 
 type LocalValues = {
   name: string;
@@ -12,6 +14,7 @@ type LocalValues = {
   phone: string | null;
   whatsapp: string | null;
   instagram: string | null;
+  hours: WeekHours | null;
 };
 
 export function SettingsForm({
@@ -102,6 +105,15 @@ export function SettingsForm({
           defaultValue={local.instagram ?? ""}
           placeholder="@tulocal"
         />
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-sm font-medium">Horario de atención</legend>
+        <p className="text-xs text-neutral-500">
+          Dejá vacío un día que no quieras mostrar, o marcá “Cerrado”. En el menú
+          público aparece plegado.
+        </p>
+        <WeekHoursFields defaultValue={local.hours} />
       </fieldset>
 
       <div className="flex items-center gap-3">

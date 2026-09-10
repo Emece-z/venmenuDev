@@ -596,3 +596,10 @@ alter table public.locals
   add column if not exists phone       text,
   add column if not exists whatsapp    text,
   add column if not exists instagram   text;
+
+-- ###### 0006_local_hours.sql ######
+-- ============================================================
+-- 0006_local_hours.sql — Horario de atención del local (jsonb, opcional)
+-- ============================================================
+alter table public.locals
+  add column if not exists hours jsonb;

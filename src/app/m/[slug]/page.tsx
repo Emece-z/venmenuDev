@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
+import { DAYS, dayHoursLabel, parseWeekHours } from "@/lib/hours";
 
 // Página pública del menú. Sin login. Se abre al acercar el NFC o escanear el QR.
 // Renderizada en el servidor (rápida, sin JS de cliente). Los datos se leen con
@@ -20,7 +21,7 @@ export default async function PublicMenuPage({
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "id, name, currency, description, address, phone, whatsapp, instagram",
+      "id, name, currency, description, address, phone, whatsapp, instagram, hours",
     )
     .eq("slug", slug)
     .eq("status", "active")
@@ -57,10 +58,12 @@ export default async function PublicMenuPage({
 
   const hasContact =
     local.address || local.phone || local.whatsapp || local.instagram;
+  const week = parseWeekHours(local.hours);
+  const hasHeader = hasContact || local.description || week;
 
   return (
     <main className="mx-auto max-w-md px-4 py-6">
-      <header className={hasContact || local.description ? "border-b border-neutral-200 pb-5" : ""}>
+      <header className={hasHeader ? "border-b border-neutral-200 pb-5" : ""}>
         <h1 className="text-xl font-semibold">{local.name}</h1>
         {local.description && (
           <p className="mt-2 text-sm text-neutral-600">{local.description}</p>
@@ -96,6 +99,36 @@ export default async function PublicMenuPage({
               )}
             </div>
           </div>
+        )}
+
+        {week && (
+          <details className="group mt-3 text-sm text-neutral-500">
+            <summary className="flex w-fit cursor-pointer list-none items-center gap-1 [&::-webkit-details-marker]:hidden">
+              <span className="underline">Horario de atención</span>
+              <svg
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                className="h-4 w-4 transition-transform group-open:rotate-180"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </summary>
+            <ul className="mt-2 flex flex-col gap-0.5">
+              {DAYS.map((d) => (
+                <li key={d.key} className="flex justify-between gap-6">
+                  <span>{d.label}</span>
+                  <span className="tabular-nums">
+                    {dayHoursLabel(week[d.key])}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
       </header>
 
