@@ -38,6 +38,9 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   orden por columna y edición inline (expande la fila). Las server actions
   (`createProduct`/`updateProduct`/`deleteProduct`/`toggleProductAvailability`)
   no cambiaron.
+  **Ajustes** (`/admin/settings`): el dueño edita nombre y moneda de su local
+  (`updateLocalSettings`; valida ISO 4217 contra `Intl`). Slug, estado del local
+  y suscripción son solo lectura ahí (los toca el super-admin).
 - **Panel super-admin (`/super-admin`):** formulario **"Nuevo local + dueño"**
   (`createLocalWithOwner`: crea local + usuario de login + vincula perfil con el
   cliente `service_role`, con rollback; incluye selector de **plan**). Lista de
@@ -68,12 +71,11 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
 
 Pendiente (en este orden sugerido):
 
-1. Editar nombre/moneda del local desde `/admin/settings` (hoy solo lectura).
-2. Feedback de errores en los formularios (hoy una acción que falla tira la
+1. Feedback de errores en los formularios (hoy una acción que falla tira la
    pantalla de error de Next; pasar a mensaje inline con `useActionState` como en
    el login).
-3. Generar el QR y grabar el NFC apuntando a `/m/[slug]`.
-4. **Módulo de pagos** (tótem + mensualidad, webhook, job que suspende por impago). Fuera de alcance hasta que se pida.
+2. Generar el QR y grabar el NFC apuntando a `/m/[slug]`.
+3. **Módulo de pagos** (tótem + mensualidad, webhook, job que suspende por impago). Fuera de alcance hasta que se pida.
 
 ## Modelo de datos
 
