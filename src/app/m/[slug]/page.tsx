@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { DAYS, dayHoursLabel, parseWeekHours } from "@/lib/hours";
+import { WhatsAppIcon, InstagramIcon } from "@/components/brand-icons";
 
 // Página pública del menú. Sin login. Se abre al acercar el NFC o escanear el QR.
 // Renderizada en el servidor (rápida, sin JS de cliente). Los datos se leen con
@@ -82,9 +83,10 @@ export default async function PublicMenuPage({
                   href={waHref(local.whatsapp) as string}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline"
+                  className="inline-flex items-center gap-1"
                 >
-                  WhatsApp
+                  <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
+                  <span className="underline">WhatsApp</span>
                 </a>
               )}
               {local.instagram && (
@@ -92,9 +94,10 @@ export default async function PublicMenuPage({
                   href={igHref(local.instagram)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline"
+                  className="inline-flex items-center gap-1"
                 >
-                  {igLabel(local.instagram)}
+                  <InstagramIcon className="h-4 w-4 text-[#E4405F]" />
+                  <span className="underline">{igLabel(local.instagram)}</span>
                 </a>
               )}
             </div>
