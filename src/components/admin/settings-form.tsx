@@ -1,10 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  updateLocalSettings,
-  initialSettingsState,
-} from "@/app/admin/settings/actions";
+import { updateLocalSettings } from "@/app/admin/settings/actions";
+import { initialSettingsState } from "@/app/admin/settings/state";
 
 type LocalValues = {
   name: string;

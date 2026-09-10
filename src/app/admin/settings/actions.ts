@@ -2,11 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getOwnerContext } from "@/lib/owner";
-
-// Estado que consume el form con `useActionState` (feedback inline, sin la
-// pantalla de error de Next).
-export type SettingsState = { ok: boolean; error: string | null };
-export const initialSettingsState: SettingsState = { ok: false, error: null };
+import type { SettingsState } from "./state";
 
 const LIMITS = {
   name: 120,
