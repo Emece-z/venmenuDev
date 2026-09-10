@@ -38,9 +38,12 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   orden por columna y edición inline (expande la fila). Las server actions
   (`createProduct`/`updateProduct`/`deleteProduct`/`toggleProductAvailability`)
   no cambiaron.
-  **Ajustes** (`/admin/settings`): el dueño edita nombre y moneda de su local
-  (`updateLocalSettings`; valida ISO 4217 contra `Intl`). Slug, estado del local
-  y suscripción son solo lectura ahí (los toca el super-admin).
+  **Ajustes** (`/admin/settings`): componente cliente `SettingsForm` con
+  `useActionState` (errores/OK inline, sin la pantalla roja de Next). El dueño
+  edita nombre, moneda (valida ISO 4217 contra `Intl`) y los **datos públicos
+  del local**: descripción/bienvenida, dirección, teléfono, WhatsApp, Instagram
+  (`updateLocalSettings` devuelve `SettingsState`). Slug, estado y suscripción
+  son solo lectura (los toca el super-admin).
 - **Panel super-admin (`/super-admin`):** formulario **"Nuevo local + dueño"**
   (`createLocalWithOwner`: crea local + usuario de login + vincula perfil con el
   cliente `service_role`, con rollback; incluye selector de **plan**). Lista de
@@ -63,17 +66,21 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   en `src/lib/images.ts` (JPG/PNG/WebP, 3 MB). Se muestran en `/admin/products`
   (miniatura + reemplazo/quitar en la edición) y en `/m/[slug]` (miniatura 64px).
 - **Página pública (`/m/[slug]`):** SSR, mobile-first, cache 30s, sin login.
-  Categorías **desplegables** (`<details>` nativo, sin JS de cliente; la primera
-  abierta). RLS oculta locales suspendidos / menús no publicados / productos no disponibles.
+  Header con nombre + descripción/bienvenida + contacto (dirección, teléfono
+  `tel:`, WhatsApp `wa.me`, Instagram). Categorías **desplegables** (`<details>`
+  nativo, sin JS de cliente; la primera abierta). RLS oculta locales suspendidos
+  / menús no publicados / productos no disponibles.
 - **DB:** `supabase/migrations/0001_init.sql`, `0002_rls.sql`, `0003_triggers.sql`,
-  `0004_storage.sql` + `seed.sql`. `supabase/setup.sql` es la concatenación de
-  todo para pegar de una en el SQL Editor.
+  `0004_storage.sql`, `0005_local_profile.sql` + `seed.sql`. `supabase/setup.sql`
+  es la concatenación de todo para pegar de una en el SQL Editor. **Ojo:** si
+  falta correr `0005`, `/m/[slug]` y `/admin/settings` fallan (el `select` pide
+  columnas que no existen).
 
 Pendiente (en este orden sugerido):
 
-1. Feedback de errores en los formularios (hoy una acción que falla tira la
-   pantalla de error de Next; pasar a mensaje inline con `useActionState` como en
-   el login).
+1. Extender el feedback de errores inline (`useActionState`) al resto de forms
+   que hoy tiran la pantalla de Next: alta en `/super-admin`, categorías,
+   productos. `/admin/settings` ya está hecho.
 2. Generar el QR y grabar el NFC apuntando a `/m/[slug]`.
 3. **Módulo de pagos** (tótem + mensualidad, webhook, job que suspende por impago). Fuera de alcance hasta que se pida.
 

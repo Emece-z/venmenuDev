@@ -19,7 +19,9 @@ export default async function PublicMenuPage({
 
   const { data: local } = await supabase
     .from("locals")
-    .select("id, name, currency")
+    .select(
+      "id, name, currency, description, address, phone, whatsapp, instagram",
+    )
     .eq("slug", slug)
     .eq("status", "active")
     .single();
@@ -53,9 +55,49 @@ export default async function PublicMenuPage({
 
   const byCategory = groupByCategory(categories ?? [], products ?? []);
 
+  const hasContact =
+    local.address || local.phone || local.whatsapp || local.instagram;
+
   return (
     <main className="mx-auto max-w-md px-4 py-6">
-      <h1 className="text-xl font-semibold">{local.name}</h1>
+      <header className={hasContact || local.description ? "border-b border-neutral-200 pb-5" : ""}>
+        <h1 className="text-xl font-semibold">{local.name}</h1>
+        {local.description && (
+          <p className="mt-2 text-sm text-neutral-600">{local.description}</p>
+        )}
+        {hasContact && (
+          <div className="mt-3 flex flex-col gap-1 text-sm text-neutral-500">
+            {local.address && <p>{local.address}</p>}
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {local.phone && (
+                <a href={telHref(local.phone)} className="underline">
+                  {local.phone}
+                </a>
+              )}
+              {local.whatsapp && waHref(local.whatsapp) && (
+                <a
+                  href={waHref(local.whatsapp) as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  WhatsApp
+                </a>
+              )}
+              {local.instagram && (
+                <a
+                  href={igHref(local.instagram)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  {igLabel(local.instagram)}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
 
       <div className="mt-6 flex flex-col">
         {byCategory.map((group, i) => (
@@ -119,6 +161,26 @@ export default async function PublicMenuPage({
       </div>
     </main>
   );
+}
+
+// Normalización de los datos de contacto a hrefs (se guardan tal cual los
+// escribe el dueño y se interpretan acá).
+function telHref(v: string): string {
+  return `tel:${v.replace(/[^\d+]/g, "")}`;
+}
+function waHref(v: string): string | null {
+  const digits = v.replace(/\D/g, "");
+  return digits ? `https://wa.me/${digits}` : null;
+}
+function igHref(v: string): string {
+  const t = v.trim();
+  return /^https?:\/\//i.test(t)
+    ? t
+    : `https://instagram.com/${t.replace(/^@/, "")}`;
+}
+function igLabel(v: string): string {
+  const m = v.trim().match(/instagram\.com\/([^/?#]+)/i);
+  return `@${(m ? m[1] : v.trim().replace(/^@/, "")).replace(/\/$/, "")}`;
 }
 
 type Cat = { id: string; name: string; sort_order: number };

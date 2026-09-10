@@ -585,3 +585,14 @@ create policy "product_images_owner_delete" on storage.objects
     bucket_id = 'product-images'
     and public.owns_local(((storage.foldername(name))[1])::uuid)
   );
+
+-- ###### 0005_local_profile.sql ######
+-- ============================================================
+-- 0005_local_profile.sql — Datos públicos del local (opcionales)
+-- ============================================================
+alter table public.locals
+  add column if not exists description text,
+  add column if not exists address     text,
+  add column if not exists phone       text,
+  add column if not exists whatsapp    text,
+  add column if not exists instagram   text;

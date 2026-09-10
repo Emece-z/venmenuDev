@@ -17,6 +17,12 @@ export type Local = {
   status: LocalStatus;
   currency: string;
   created_at: string;
+  // Datos públicos editables por el dueño (0005). Todos opcionales.
+  description: string | null;
+  address: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  instagram: string | null;
 };
 
 export type Profile = {

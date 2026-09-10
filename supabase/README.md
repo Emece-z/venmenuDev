@@ -10,10 +10,11 @@ Pegá y ejecutá **en orden**:
 2. `migrations/0002_rls.sql`
 3. `migrations/0003_triggers.sql`
 4. `migrations/0004_storage.sql` (bucket de imágenes de producto)
-5. `seed.sql` (opcional, datos demo)
+5. `migrations/0005_local_profile.sql` (datos públicos del local)
+6. `seed.sql` (opcional, datos demo)
 
-> Si ya tenías la base creada, para sumar solo las imágenes corré
-> `migrations/0004_storage.sql` suelto (es idempotente).
+> Si ya tenías la base creada, corré sueltas las migraciones nuevas
+> (`0004_…`, `0005_…`) — son idempotentes.
 
 ### Opción B — Supabase CLI (recomendado cuando el esquema se estabilice)
 

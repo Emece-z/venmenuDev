@@ -1,7 +1,7 @@
 import { requireOwner } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { planLabel, subStatusLabel } from "@/lib/plans";
-import { updateLocalSettings } from "./actions";
+import { SettingsForm } from "@/components/admin/settings-form";
 
 // Monedas frecuentes en la región + algunas globales. Si el local ya tiene una
 // que no está en la lista, se agrega al principio para no perderla.
@@ -18,8 +18,8 @@ const COMMON_CURRENCIES = [
   "EUR",
 ];
 
-// CLP/JPY/KRW/PYG no usan decimales; el resto sí (ver src/lib/money.ts).
-const ZERO_DECIMAL = new Set(["CLP", "JPY", "KRW", "PYG"]);
+// CLP/JPY/KRW/PYG no usan decimales (ver src/lib/money.ts).
+const ZERO_DECIMAL = ["CLP", "JPY", "KRW", "PYG"];
 
 export default async function SettingsPage() {
   const profile = await requireOwner();
@@ -27,7 +27,9 @@ export default async function SettingsPage() {
 
   const { data: local } = await supabase
     .from("locals")
-    .select("name, slug, status, currency, created_at")
+    .select(
+      "name, slug, status, currency, description, address, phone, whatsapp, instagram",
+    )
     .eq("id", profile.local_id)
     .single();
 
@@ -46,46 +48,19 @@ export default async function SettingsPage() {
     <div className="flex flex-col gap-6">
       <h1 className="text-lg font-semibold">Ajustes</h1>
 
-      {/* Editable */}
-      <form
-        action={updateLocalSettings}
-        className="flex flex-col gap-3 rounded-lg border border-neutral-200 p-4"
-      >
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-neutral-500">Nombre del local</span>
-          <input
-            name="name"
-            defaultValue={local?.name ?? ""}
-            required
-            className="rounded border border-neutral-300 px-2 py-1"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-neutral-500">Moneda</span>
-          <select
-            name="currency"
-            defaultValue={currency}
-            className="rounded border border-neutral-300 px-2 py-1"
-          >
-            {currencyOptions.map((c) => (
-              <option key={c} value={c}>
-                {c}
-                {ZERO_DECIMAL.has(c) ? " (sin decimales)" : ""}
-              </option>
-            ))}
-          </select>
-          <span className="text-xs text-amber-700">
-            ⚠ Cambiar entre una moneda sin decimales (CLP) y una con decimales
-            (USD, ARS…) altera cómo se leen los precios ya cargados. Revisá los
-            productos después de cambiarla.
-          </span>
-        </label>
-
-        <button className="mt-1 self-start rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white">
-          Guardar
-        </button>
-      </form>
+      <SettingsForm
+        local={{
+          name: local?.name ?? "",
+          currency,
+          description: local?.description ?? null,
+          address: local?.address ?? null,
+          phone: local?.phone ?? null,
+          whatsapp: local?.whatsapp ?? null,
+          instagram: local?.instagram ?? null,
+        }}
+        currencyOptions={currencyOptions}
+        zeroDecimal={ZERO_DECIMAL}
+      />
 
       {/* Solo lectura */}
       <dl className="rounded-lg border border-neutral-200 p-4 text-sm">
