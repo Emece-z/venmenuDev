@@ -131,6 +131,9 @@ Pendiente (en este orden sugerido):
   inline): reciben los datos ya traídos por el Server Component como props y solo
   manejan UI; las escrituras siguen yendo por Server Actions. Ej.
   `src/components/super-admin/locals-table.tsx`, `src/components/admin/products-manager.tsx`.
+- Un archivo `"use server"` **solo puede exportar funciones async**. El estado
+  inicial y los tipos para `useActionState` van en un módulo aparte (ej.
+  `src/app/admin/settings/state.ts`), no en el `actions.ts`.
 - Windows es case-insensitive: no crear carpetas que difieran solo en mayúsculas.
 - Shell primario PowerShell 5.1: sin `&&` / `||` / ternario. Para robocopy y
   comandos con flags `/X`, usar PowerShell (Git Bash traduce mal las rutas `/E`).
