@@ -96,10 +96,8 @@ export function CategoriesManager({ categories }: { categories: Category[] }) {
                   />
                 </label>
                 <button
-                  formAction={deleteCategory}
+                  formAction={deleteCategory.bind(null, c.id)}
                   formNoValidate
-                  name="id"
-                  value={c.id}
                   className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700"
                 >
                   Eliminar

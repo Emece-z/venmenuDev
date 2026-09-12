@@ -76,10 +76,12 @@ export async function saveCategories(
 // Sin FormState: se dispara desde un botón `formAction` dentro del form de
 // "Guardar cambios"; borrar una categoría casi no tiene casos de error reales
 // de cara al usuario (el id siempre es válido, viene de la propia fila).
-export async function deleteCategory(formData: FormData) {
+// El id llega "enlazado" con `.bind(null, c.id)` en vez de por un campo del
+// form: React 19 no deja combinar `name`/`value` en un botón cuyo `formAction`
+// es una función (los usa para saber qué acción invocar).
+export async function deleteCategory(id: string) {
   const { supabase, profile } = await getOwnerContext();
 
-  const id = String(formData.get("id") ?? "");
   if (!id) throw new Error("Falta id");
 
   // Los productos de esta categoría quedan con category_id = null (FK ON DELETE SET NULL).
