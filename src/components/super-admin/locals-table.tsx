@@ -53,7 +53,7 @@ export function LocalsTable({ locals }: { locals: LocalRow[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar por nombre o slug…"
-          className="w-full max-w-xs rounded border border-neutral-300 px-2 py-1 text-sm"
+          className="w-full max-w-xs rounded border border-neutral-300 px-2 py-1 text-sm outline-none focus:border-brand-navy"
         />
         <label className="flex items-center gap-1.5 text-sm text-neutral-600">
           <input
@@ -265,7 +265,7 @@ function FragmentRow({
                 <div className="mt-1 flex items-center gap-3">
                   <button
                     disabled={localPending}
-                    className="self-start rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                    className="self-start rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
                   >
                     {localPending ? "Guardando…" : "Guardar datos"}
                   </button>
@@ -321,7 +321,7 @@ function FragmentRow({
                 <div className="mt-1 flex items-center gap-3">
                   <button
                     disabled={subPending}
-                    className="self-start rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                    className="self-start rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
                   >
                     {subPending ? "Guardando…" : "Guardar suscripción"}
                   </button>
@@ -366,7 +366,7 @@ function LabeledInput({
         defaultValue={defaultValue}
         required={required}
         pattern={pattern}
-        className="rounded border border-neutral-300 px-2 py-1"
+        className="rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
       />
     </label>
   );
