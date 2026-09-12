@@ -13,10 +13,11 @@ Pegá y ejecutá **en orden**:
 5. `migrations/0005_local_profile.sql` (datos públicos del local)
 6. `migrations/0006_local_hours.sql` (horario de atención)
 7. `migrations/0007_google_reviews.sql` (link de reseñas de Google)
-8. `seed.sql` (opcional, datos demo)
+8. `migrations/0008_local_avatar.sql` (avatar/logo del local)
+9. `seed.sql` (opcional, datos demo)
 
 > Si ya tenías la base creada, corré sueltas las migraciones nuevas
-> (`0004_…` a `0007_…`) — son idempotentes.
+> (`0004_…` a `0008_…`) — son idempotentes.
 
 ### Opción B — Supabase CLI (recomendado cuando el esquema se estabilice)
 

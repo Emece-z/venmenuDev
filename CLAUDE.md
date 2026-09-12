@@ -46,19 +46,34 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   guardar es la posición en la lista (índice + 1). Categoría nueva entra
   siempre al final; se arrastra a su lugar después.
   **Productos** (`/admin/products`): alta en `CreateProductForm` (colapsable,
-  feedback inline) + `ProductsManager` con buscador, filtro por
+  feedback inline) + sección colapsable **"↕ Reordenar productos"**
+  (`ReorderProducts`: arrastre agrupado por categoría — solo reordena dentro
+  de la misma categoría; `sort_order` = posición final; `GripIcon` compartido
+  con `CategoriesManager`) + `ProductsManager` con buscador, filtro por
   categoría/disponibilidad, orden por columna y edición inline con feedback
-  (`updateProduct`); `deleteProduct`/`toggleProductAvailability` quedaron simples.
+  (`updateProduct`, que ya no toca `sort_order`); `deleteProduct`/
+  `toggleProductAvailability` quedaron simples.
   **Ajustes** (`/admin/settings`): componente cliente `SettingsForm`. El dueño
-  edita nombre, moneda (valida ISO 4217 contra `Intl`), los **datos públicos
-  del local** (descripción/bienvenida, dirección, teléfono, WhatsApp, Instagram),
-  el **horario de atención** semanal (`WeekHoursFields`: rango horario por día
+  edita nombre, **avatar/logo** (bucket `local-avatars`, ver más abajo),
+  moneda (valida ISO 4217 contra `Intl`), los **datos públicos del local**
+  (descripción/bienvenida, dirección, teléfono, WhatsApp, Instagram), el
+  **horario de atención** semanal (`WeekHoursFields`: rango horario por día
   + checkbox "Cerrado"; helpers en `src/lib/hours.ts`, guardado en `locals.hours`
   jsonb) y el **link de reseña de Google** (checkbox "Mostrar link…" que habilita
   el campo de URL; solo tiene sentido si el local está registrado en Google con
   el nombre del comercio — se lo aclara en la ayuda del campo;
-  `locals.google_reviews_enabled` + `google_review_url`). Slug, estado y
-  suscripción son solo lectura (los toca el super-admin).
+  `locals.google_reviews_enabled` + `google_review_url`; en `/m/[slug]` el
+  texto del link es "¡Dejanos tu reseña!"). Slug, estado y suscripción son
+  solo lectura (los toca el super-admin).
+- **Avatar/logo del local:** bucket público `local-avatars`
+  (`0008_local_avatar.sql`), ruta `<local_id>/avatar`. A diferencia de las
+  fotos de producto, las políticas dejan escribir tanto al **dueño**
+  (`owns_local`) como al **super-admin** (`is_super_admin`) — se edita desde
+  ambos paneles con el cliente normal, sin `service_role`. Helpers en
+  `src/lib/avatar.ts` (`uploadLocalAvatar`/`removeLocalAvatar`, reusados por
+  `admin/settings/actions.ts` y `super-admin/actions.ts`). Se muestra en
+  `/admin/settings`, `/super-admin` (`LocalsTable`), header de `/admin` y en
+  el header de `/m/[slug]` junto al nombre.
 - **Panel super-admin (`/super-admin`):** formulario **"Nuevo local + dueño"**
   en `CreateLocalForm` (`createLocalWithOwner`: crea local + usuario de login +
   vincula perfil con el cliente `service_role`, con rollback; incluye selector
@@ -104,10 +119,10 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   `/admin` y `/super-admin`): dueño solo para su propio local, super-admin
   para cualquiera. Botones de descarga en `/admin` (resumen) y por fila en
   `LocalsTable` (`/super-admin`).
-- **DB:** `supabase/migrations/0001_init.sql` … `0007_google_reviews.sql` + `seed.sql`.
+- **DB:** `supabase/migrations/0001_init.sql` … `0008_local_avatar.sql` + `seed.sql`.
   `supabase/setup.sql` es la concatenación de todo para pegar de una en el SQL
   Editor. **Ojo:** cada migración nueva hay que correrla en Supabase; si falta
-  alguna de `0005`–`0007`, `/m/[slug]` y `/admin/settings` fallan (el `select`
+  alguna de `0005`–`0008`, `/m/[slug]` y `/admin/settings` fallan (el `select`
   pide columnas que no existen).
 
 Pendiente (en este orden sugerido):
