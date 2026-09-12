@@ -152,6 +152,14 @@ Pendiente (en este orden sugerido):
   esa acción puede seguir siendo simple (`(formData) => void`, `throw` en vez
   de retornar) — no hace falta que todas comportan la misma firma dentro de un
   mismo form.
+- **React 19: un `<button formAction={fn}>` con `fn` una función NO puede
+  llevar además `name`/`value`** (error en consola: "Cannot specify a name
+  prop for a button that specifies a function as a formAction"; React los usa
+  para codificar qué acción invocar). Para identificar una fila dentro de un
+  form compartido (ej. "Eliminar" en `CategoriesManager`), enlazar el dato con
+  `.bind(null, id)` — `formAction={deleteCategory.bind(null, c.id)}`, con la
+  action tomando `id` como primer parámetro — en vez de `name`/`value` en el
+  botón.
 
 ## Entorno / gotchas
 
