@@ -603,3 +603,11 @@ alter table public.locals
 -- ============================================================
 alter table public.locals
   add column if not exists hours jsonb;
+
+-- ###### 0007_google_reviews.sql ######
+-- ============================================================
+-- 0007_google_reviews.sql — Link de reseñas de Google (opcional)
+-- ============================================================
+alter table public.locals
+  add column if not exists google_reviews_enabled boolean not null default false,
+  add column if not exists google_review_url text;

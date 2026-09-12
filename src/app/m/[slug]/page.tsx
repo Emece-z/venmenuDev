@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { DAYS, dayHoursLabel, parseWeekHours } from "@/lib/hours";
-import { WhatsAppIcon, InstagramIcon } from "@/components/brand-icons";
+import { WhatsAppIcon, InstagramIcon, GoogleIcon } from "@/components/brand-icons";
 
 // Página pública del menú. Sin login. Se abre al acercar el NFC o escanear el QR.
 // Renderizada en el servidor (rápida, sin JS de cliente). Los datos se leen con
@@ -22,7 +22,7 @@ export default async function PublicMenuPage({
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "id, name, currency, description, address, phone, whatsapp, instagram, hours",
+      "id, name, currency, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
     )
     .eq("slug", slug)
     .eq("status", "active")
@@ -57,8 +57,16 @@ export default async function PublicMenuPage({
 
   const byCategory = groupByCategory(categories ?? [], products ?? []);
 
+  const googleReviewUrl =
+    local.google_reviews_enabled && local.google_review_url
+      ? local.google_review_url
+      : null;
   const hasContact =
-    local.address || local.phone || local.whatsapp || local.instagram;
+    local.address ||
+    local.phone ||
+    local.whatsapp ||
+    local.instagram ||
+    googleReviewUrl;
   const week = parseWeekHours(local.hours);
   const hasHeader = hasContact || local.description || week;
 
@@ -98,6 +106,17 @@ export default async function PublicMenuPage({
                 >
                   <InstagramIcon className="h-4 w-4 text-[#E4405F]" />
                   <span className="underline">{igLabel(local.instagram)}</span>
+                </a>
+              )}
+              {googleReviewUrl && (
+                <a
+                  href={googleReviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1"
+                >
+                  <GoogleIcon className="h-4 w-4" />
+                  <span className="underline">Reseña en Google</span>
                 </a>
               )}
             </div>

@@ -27,6 +27,9 @@ export type Local = {
   instagram: string | null;
   // Horario de atención (0006). jsonb; null = sin configurar.
   hours: WeekHours | null;
+  // Link de reseñas de Google (0007). Solo se muestra si enabled=true y hay URL.
+  google_reviews_enabled: boolean;
+  google_review_url: string | null;
 };
 
 export type Profile = {

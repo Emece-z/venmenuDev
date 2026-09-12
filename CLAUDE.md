@@ -42,10 +42,13 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   `useActionState` (errores/OK inline, sin la pantalla roja de Next). El dueño
   edita nombre, moneda (valida ISO 4217 contra `Intl`), los **datos públicos
   del local** (descripción/bienvenida, dirección, teléfono, WhatsApp, Instagram)
-  y el **horario de atención** semanal (`WeekHoursFields`: rango horario por día
+  el **horario de atención** semanal (`WeekHoursFields`: rango horario por día
   + checkbox "Cerrado"; helpers en `src/lib/hours.ts`, guardado en `locals.hours`
-  jsonb). `updateLocalSettings` devuelve `SettingsState`. Slug, estado y
-  suscripción son solo lectura (los toca el super-admin).
+  jsonb) y el **link de reseña de Google** (checkbox "Mostrar link…" que habilita
+  el campo de URL; solo tiene sentido si el local está registrado en Google con
+  el nombre del comercio — se lo aclara en la ayuda del campo; `locals.google_reviews_enabled`
+  + `google_review_url`). `updateLocalSettings` devuelve `SettingsState`. Slug,
+  estado y suscripción son solo lectura (los toca el super-admin).
 - **Panel super-admin (`/super-admin`):** formulario **"Nuevo local + dueño"**
   (`createLocalWithOwner`: crea local + usuario de login + vincula perfil con el
   cliente `service_role`, con rollback; incluye selector de **plan**). Lista de
@@ -69,14 +72,24 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   (miniatura + reemplazo/quitar en la edición) y en `/m/[slug]` (miniatura 64px).
 - **Página pública (`/m/[slug]`):** SSR, mobile-first, cache 30s, sin login.
   Header con nombre + descripción/bienvenida + contacto (dirección, teléfono
-  `tel:`, WhatsApp `wa.me`, Instagram) + **horario** en `<details>` plegado.
-  Categorías **desplegables** (`<details>` nativo, sin JS de cliente; la primera
-  abierta). RLS oculta locales suspendidos / menús no publicados / productos no disponibles.
-- **DB:** `supabase/migrations/0001_init.sql` … `0006_local_hours.sql` + `seed.sql`.
+  `tel:`, WhatsApp `wa.me` con ícono, Instagram con ícono, y **reseña de
+  Google** con ícono si el dueño la activó) + **horario** en `<details>`
+  plegado. Íconos de marca inline en `src/components/brand-icons.tsx` (sin
+  librerías ni requests externos). Categorías **desplegables** (`<details>`
+  nativo, sin JS de cliente; la primera abierta). RLS oculta locales
+  suspendidos / menús no publicados / productos no disponibles.
+- **QR del menú:** `GET /api/qr?slug=<slug>&format=png|svg` (`src/app/api/qr/route.ts`)
+  genera el QR **en el servidor** con la librería `qrcode` (npm, sin servicio de
+  terceros, sin costo) apuntando a `${NEXT_PUBLIC_SITE_URL}/m/<slug>` y lo devuelve
+  como descarga (`Content-Disposition: attachment`). Autorización manual en la
+  misma ruta (no cubierta por `middleware.ts`, que solo guarda `/admin` y
+  `/super-admin`): dueño solo para su propio local, super-admin para cualquiera.
+  Botones de descarga en `/admin` (resumen) y por fila en `LocalsTable` (`/super-admin`).
+- **DB:** `supabase/migrations/0001_init.sql` … `0007_google_reviews.sql` + `seed.sql`.
   `supabase/setup.sql` es la concatenación de todo para pegar de una en el SQL
   Editor. **Ojo:** cada migración nueva hay que correrla en Supabase; si falta
-  `0005`/`0006`, `/m/[slug]` y `/admin/settings` fallan (el `select` pide
-  columnas que no existen).
+  alguna de `0005`–`0007`, `/m/[slug]` y `/admin/settings` fallan (el `select`
+  pide columnas que no existen).
 
 Pendiente (en este orden sugerido):
 

@@ -29,7 +29,7 @@ export default async function SettingsPage() {
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "name, slug, status, currency, description, address, phone, whatsapp, instagram, hours",
+      "name, slug, status, currency, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
     )
     .eq("id", profile.local_id)
     .single();
@@ -59,6 +59,8 @@ export default async function SettingsPage() {
           whatsapp: local?.whatsapp ?? null,
           instagram: local?.instagram ?? null,
           hours: parseWeekHours(local?.hours ?? null),
+          googleReviewsEnabled: local?.google_reviews_enabled ?? false,
+          googleReviewUrl: local?.google_review_url ?? null,
         }}
         currencyOptions={currencyOptions}
         zeroDecimal={ZERO_DECIMAL}

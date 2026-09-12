@@ -12,11 +12,21 @@ const LIMITS = {
   phone: 40,
   whatsapp: 40,
   instagram: 100,
+  google_review_url: 300,
 } as const;
 
 function text(formData: FormData, key: string, max: number): string | null {
   const v = String(formData.get(key) ?? "").trim();
   return v ? v.slice(0, max) : null;
+}
+
+function isHttpUrl(v: string): boolean {
+  try {
+    const u = new URL(v);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 // El dueño edita nombre, moneda y datos públicos de su propio local. RLS
@@ -51,6 +61,20 @@ export async function updateLocalSettings(
 
   const week = readWeekHoursFromForm(formData);
 
+  const googleReviewsEnabled = formData.get("google_reviews_enabled") === "on";
+  const googleReviewUrl = text(
+    formData,
+    "google_review_url",
+    LIMITS.google_review_url,
+  );
+  if (googleReviewsEnabled && !(googleReviewUrl && isHttpUrl(googleReviewUrl))) {
+    return {
+      ok: false,
+      error:
+        "Para mostrar el link de reseñas ingresá una URL válida (la que te da tu perfil de Google Business)",
+    };
+  }
+
   const { error } = await supabase
     .from("locals")
     .update({
@@ -62,6 +86,8 @@ export async function updateLocalSettings(
       whatsapp: text(formData, "whatsapp", LIMITS.whatsapp),
       instagram: text(formData, "instagram", LIMITS.instagram),
       hours: hasMeaningfulHours(week) ? week : null,
+      google_reviews_enabled: googleReviewsEnabled,
+      google_review_url: googleReviewUrl,
     })
     .eq("id", profile.local_id);
   if (error) return { ok: false, error: error.message };

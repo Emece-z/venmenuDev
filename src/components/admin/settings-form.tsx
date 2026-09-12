@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
 import { updateLocalSettings } from "@/app/admin/settings/actions";
 import { initialSettingsState } from "@/app/admin/settings/state";
@@ -15,6 +16,8 @@ type LocalValues = {
   whatsapp: string | null;
   instagram: string | null;
   hours: WeekHours | null;
+  googleReviewsEnabled: boolean;
+  googleReviewUrl: string | null;
 };
 
 export function SettingsForm({
@@ -30,6 +33,7 @@ export function SettingsForm({
     updateLocalSettings,
     initialSettingsState,
   );
+  const [googleEnabled, setGoogleEnabled] = useState(local.googleReviewsEnabled);
 
   return (
     <form
@@ -105,6 +109,32 @@ export function SettingsForm({
           defaultValue={local.instagram ?? ""}
           placeholder="@tulocal"
         />
+
+        <div className="flex flex-col gap-2 border-t border-neutral-100 pt-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="google_reviews_enabled"
+              defaultChecked={googleEnabled}
+              onChange={(e) => setGoogleEnabled(e.target.checked)}
+            />
+            Mostrar link para dejar reseña en Google
+          </label>
+          <p className="text-xs text-neutral-500">
+            Marcalo solo si tu local está registrado en Google (Google Business
+            Profile / Maps) con el nombre del comercio. Para conseguir el link:
+            en tu perfil de Google Business → “Pedir reseñas” → copiar enlace; o
+            en Google Maps, buscá el local → “Escribir una opinión” → copiar el
+            link de esa pantalla.
+          </p>
+          <Text
+            label="URL de reseña de Google"
+            name="google_review_url"
+            defaultValue={local.googleReviewUrl ?? ""}
+            placeholder="https://g.page/r/…/review"
+            disabled={!googleEnabled}
+          />
+        </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">
@@ -145,6 +175,7 @@ function Text({
   required,
   placeholder,
   inputMode,
+  disabled,
 }: {
   label: string;
   name: string;
@@ -152,6 +183,7 @@ function Text({
   required?: boolean;
   placeholder?: string;
   inputMode?: "tel" | "text";
+  disabled?: boolean;
 }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
@@ -162,7 +194,8 @@ function Text({
         required={required}
         placeholder={placeholder}
         inputMode={inputMode}
-        className="rounded border border-neutral-300 px-2 py-1"
+        disabled={disabled}
+        className="rounded border border-neutral-300 px-2 py-1 disabled:opacity-40"
       />
     </label>
   );

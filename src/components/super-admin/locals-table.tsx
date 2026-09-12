@@ -147,13 +147,19 @@ function FragmentRow({
           </span>
         </td>
         <td className="py-2">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={onToggleEdit}
               className="rounded border border-neutral-300 px-2 py-1 text-xs"
             >
               {editing ? "Cerrar" : "Editar"}
             </button>
+            <a
+              href={`/api/qr?slug=${l.slug}&format=png`}
+              className="rounded border border-neutral-300 px-2 py-1 text-xs"
+            >
+              QR
+            </a>
             <form action={setLocalStatus}>
               <input type="hidden" name="localId" value={l.id} />
               <input
