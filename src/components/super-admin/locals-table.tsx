@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   setLocalStatus,
   updateLocal,
@@ -21,6 +22,7 @@ export type LocalRow = {
   slug: string;
   currency: string;
   status: "active" | "suspended";
+  avatarUrl: string | null;
   plan: string;
   subStatus: string;
   productCount: number;
@@ -129,14 +131,29 @@ function FragmentRow({
     <>
       <tr className="border-b border-neutral-100 align-top">
         <td className="py-2 pr-4">
-          <div className="font-medium">{l.name}</div>
-          <Link
-            href={`/m/${l.slug}`}
-            target="_blank"
-            className="text-xs text-neutral-500 underline"
-          >
-            /m/{l.slug}
-          </Link>
+          <div className="flex items-center gap-2">
+            {l.avatarUrl ? (
+              <Image
+                src={l.avatarUrl}
+                alt=""
+                width={28}
+                height={28}
+                className="h-7 w-7 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <span className="h-7 w-7 shrink-0 rounded-full bg-neutral-100" />
+            )}
+            <div>
+              <div className="font-medium">{l.name}</div>
+              <Link
+                href={`/m/${l.slug}`}
+                target="_blank"
+                className="text-xs text-neutral-500 underline"
+              >
+                /m/{l.slug}
+              </Link>
+            </div>
+          </div>
         </td>
         <td className="py-2 pr-4 tabular-nums">{l.productCount}</td>
         <td className="py-2 pr-4">
@@ -194,6 +211,40 @@ function FragmentRow({
               <form action={localAction} className="flex flex-col gap-2">
                 <p className="text-sm font-medium">Datos del local</p>
                 <input type="hidden" name="localId" value={l.id} />
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm text-neutral-500">Avatar / logo</span>
+                  <div className="flex items-center gap-3">
+                    {l.avatarUrl ? (
+                      <Image
+                        src={l.avatarUrl}
+                        alt=""
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 shrink-0 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs text-neutral-400">
+                        sin foto
+                      </span>
+                    )}
+                    <div className="flex flex-col gap-1 text-sm">
+                      <input
+                        type="file"
+                        name="avatar"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="text-sm"
+                      />
+                      {l.avatarUrl && (
+                        <label className="flex items-center gap-2 text-xs text-neutral-600">
+                          <input type="checkbox" name="remove_avatar" />
+                          Quitar avatar actual
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <LabeledInput label="Nombre" name="name" defaultValue={l.name} required />
                 <LabeledInput
                   label="Slug (URL pública)"

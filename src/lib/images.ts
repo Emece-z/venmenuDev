@@ -5,6 +5,10 @@
 
 export const PRODUCT_IMAGES_BUCKET = "product-images";
 
+// Avatar/logo del local. Mismo criterio, pero acá también puede escribir el
+// super-admin (no solo el dueño) — ver políticas en 0008_local_avatar.sql.
+export const LOCAL_AVATARS_BUCKET = "local-avatars";
+
 export const MAX_IMAGE_BYTES = 3 * 1024 * 1024; // 3 MB
 export const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
@@ -16,6 +20,10 @@ export const ALLOWED_IMAGE_TYPES = [
 // se guarda como metadato al subir). Así el borrado es una sola clave conocida.
 export function productImagePath(localId: string, productId: string): string {
   return `${localId}/${productId}`;
+}
+
+export function localAvatarPath(localId: string): string {
+  return `${localId}/avatar`;
 }
 
 // Valida un File recibido en un Server Action. Devuelve null si no hay archivo

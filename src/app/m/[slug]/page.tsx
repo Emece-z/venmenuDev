@@ -22,7 +22,7 @@ export default async function PublicMenuPage({
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "id, name, currency, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
+      "id, name, currency, avatar_url, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
     )
     .eq("slug", slug)
     .eq("status", "active")
@@ -73,7 +73,18 @@ export default async function PublicMenuPage({
   return (
     <main className="mx-auto max-w-md px-4 py-6">
       <header className={hasHeader ? "border-b border-neutral-200 pb-5" : ""}>
-        <h1 className="text-xl font-semibold">{local.name}</h1>
+        <div className="flex items-center gap-3">
+          {local.avatar_url && (
+            <Image
+              src={local.avatar_url}
+              alt=""
+              width={56}
+              height={56}
+              className="h-14 w-14 shrink-0 rounded-full object-cover"
+            />
+          )}
+          <h1 className="text-xl font-semibold">{local.name}</h1>
+        </div>
         {local.description && (
           <p className="mt-2 text-sm text-neutral-600">{local.description}</p>
         )}
@@ -116,7 +127,7 @@ export default async function PublicMenuPage({
                   className="inline-flex items-center gap-1"
                 >
                   <GoogleIcon className="h-4 w-4" />
-                  <span className="underline">Reseña en Google</span>
+                  <span className="underline">¡Dejanos tu reseña!</span>
                 </a>
               )}
             </div>

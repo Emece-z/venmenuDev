@@ -312,15 +312,6 @@ function Row({
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-neutral-500">Orden</span>
-                <input
-                  name="sort_order"
-                  type="number"
-                  defaultValue={p.sort_order}
-                  className="w-20 rounded border border-neutral-300 px-2 py-1"
-                />
-              </label>
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"

@@ -12,7 +12,7 @@ export default async function SuperAdminHomePage() {
     await Promise.all([
       supabase
         .from("locals")
-        .select("id, name, slug, currency, status, created_at")
+        .select("id, name, slug, currency, status, avatar_url, created_at")
         .order("created_at", { ascending: false }),
       supabase.from("subscriptions").select("local_id, status, plan"),
       supabase.from("menus").select("local_id, is_published"),
@@ -39,6 +39,7 @@ export default async function SuperAdminHomePage() {
       slug: l.slug,
       currency: l.currency,
       status: l.status,
+      avatarUrl: l.avatar_url,
       plan: sub?.plan ?? "basico",
       subStatus: sub?.status ?? "trialing",
       productCount: productCountByLocal.get(l.id) ?? 0,

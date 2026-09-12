@@ -161,13 +161,41 @@ export async function updateProduct(
   const { error } = await supabase
     .from("products")
     .update({
-      sort_order: Number(formData.get("sort_order") ?? 0) || 0,
+      // El orden ya no se edita acá: se arrastra en "Reordenar productos".
       ...values,
       ...(imageUrl !== undefined ? { image_url: imageUrl } : {}),
     })
     .eq("id", id)
     .eq("local_id", profile.local_id);
   if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/products");
+  revalidatePath("/admin");
+  return { ok: true, error: null };
+}
+
+// Guarda el orden de TODOS los productos de una vez (arrastre en la UI, no
+// número editable): `ids` llega en el orden final ya arrastrado; el
+// sort_order que se persiste es simplemente la posición (índice + 1). Sirve
+// para todas las categorías juntas porque la vista pública agrupa por
+// categoría primero y ordena por sort_order dentro de cada grupo — un
+// contador global funciona igual de bien que uno por categoría.
+export async function saveProductOrder(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { supabase, profile } = await getOwnerContext();
+
+  const ids = formData.getAll("ids").map(String).filter(Boolean);
+
+  for (let i = 0; i < ids.length; i++) {
+    const { error } = await supabase
+      .from("products")
+      .update({ sort_order: i + 1 })
+      .eq("id", ids[i])
+      .eq("local_id", profile.local_id);
+    if (error) return { ok: false, error: error.message };
+  }
 
   revalidatePath("/admin/products");
   revalidatePath("/admin");

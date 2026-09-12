@@ -30,6 +30,8 @@ export type Local = {
   // Link de reseñas de Google (0007). Solo se muestra si enabled=true y hay URL.
   google_reviews_enabled: boolean;
   google_review_url: string | null;
+  // Avatar/logo del local (0008). Editable por el dueño y por el super-admin.
+  avatar_url: string | null;
 };
 
 export type Profile = {

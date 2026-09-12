@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getOwnerContext } from "@/lib/owner";
 import { readWeekHoursFromForm, hasMeaningfulHours } from "@/lib/hours";
+import { validateImageFile } from "@/lib/images";
+import { uploadLocalAvatar, removeLocalAvatar } from "@/lib/avatar";
 import type { SettingsState } from "./state";
 
 const LIMITS = {
@@ -36,7 +38,7 @@ export async function updateLocalSettings(
   _prev: SettingsState,
   formData: FormData,
 ): Promise<SettingsState> {
-  const { supabase, profile } = await getOwnerContext();
+  const { supabase, profile, local } = await getOwnerContext();
 
   const name = text(formData, "name", LIMITS.name);
   if (!name) return { ok: false, error: "El nombre es obligatorio" };
@@ -60,6 +62,26 @@ export async function updateLocalSettings(
   }
 
   const week = readWeekHoursFromForm(formData);
+
+  let avatar: File | null;
+  try {
+    avatar = validateImageFile(formData.get("avatar"));
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Imagen inválida" };
+  }
+  const removeAvatar = formData.get("remove_avatar") === "on";
+
+  let avatarUrl: string | null | undefined;
+  try {
+    if (avatar) {
+      avatarUrl = await uploadLocalAvatar(supabase, profile.local_id, avatar);
+    } else if (removeAvatar) {
+      await removeLocalAvatar(supabase, profile.local_id);
+      avatarUrl = null;
+    }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "No se pudo actualizar el avatar" };
+  }
 
   const googleReviewsEnabled = formData.get("google_reviews_enabled") === "on";
   // El valor se guarda tal cual se envíe, se muestre o no el checkbox: así
@@ -91,6 +113,7 @@ export async function updateLocalSettings(
       hours: hasMeaningfulHours(week) ? week : null,
       google_reviews_enabled: googleReviewsEnabled,
       google_review_url: googleReviewUrl,
+      ...(avatarUrl !== undefined ? { avatar_url: avatarUrl } : {}),
     })
     .eq("id", profile.local_id);
   if (error) return { ok: false, error: error.message };
@@ -98,5 +121,6 @@ export async function updateLocalSettings(
   revalidatePath("/admin/settings");
   revalidatePath("/admin");
   revalidatePath("/admin/products");
+  if (local) revalidatePath(`/m/${local.slug}`);
   return { ok: true, error: null };
 }

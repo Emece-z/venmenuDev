@@ -1,6 +1,7 @@
 import { getOwnerContext } from "@/lib/owner";
 import { CreateProductForm } from "@/components/admin/create-product-form";
 import { ProductsManager } from "@/components/admin/products-manager";
+import { ReorderProducts } from "@/components/admin/reorder-products";
 
 type Category = { id: string; name: string };
 
@@ -36,6 +37,15 @@ export default async function ProductsPage() {
       )}
 
       <CreateProductForm categories={cats} currency={currency} />
+
+      <details className="rounded-lg border border-neutral-200 [&[open]>summary]:mb-3">
+        <summary className="cursor-pointer list-none p-4 text-sm font-medium [&::-webkit-details-marker]:hidden">
+          ↕ Reordenar productos
+        </summary>
+        <div className="px-4 pb-4">
+          <ReorderProducts products={products ?? []} categories={cats} />
+        </div>
+      </details>
 
       <ProductsManager
         products={products ?? []}

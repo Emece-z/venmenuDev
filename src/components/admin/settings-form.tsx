@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useActionState } from "react";
+import Image from "next/image";
 import { updateLocalSettings } from "@/app/admin/settings/actions";
 import { initialSettingsState } from "@/app/admin/settings/state";
 import { WeekHoursFields } from "@/components/admin/week-hours-fields";
@@ -10,6 +11,7 @@ import type { WeekHours } from "@/lib/hours";
 type LocalValues = {
   name: string;
   currency: string;
+  avatarUrl: string | null;
   description: string | null;
   address: string | null;
   phone: string | null;
@@ -44,6 +46,43 @@ export function SettingsForm({
         <legend className="text-sm font-medium">Datos generales</legend>
 
         <Text label="Nombre del local" name="name" defaultValue={local.name} required />
+
+        <div className="flex flex-col gap-2">
+          <span className="text-sm text-neutral-500">Avatar / logo</span>
+          <div className="flex items-center gap-3">
+            {local.avatarUrl ? (
+              <Image
+                src={local.avatarUrl}
+                alt="Avatar del local"
+                width={64}
+                height={64}
+                className="h-16 w-16 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs text-neutral-400">
+                sin foto
+              </span>
+            )}
+            <div className="flex flex-col gap-1 text-sm">
+              <input
+                type="file"
+                name="avatar"
+                accept="image/jpeg,image/png,image/webp"
+                className="text-sm"
+              />
+              {local.avatarUrl && (
+                <label className="flex items-center gap-2 text-xs text-neutral-600">
+                  <input type="checkbox" name="remove_avatar" />
+                  Quitar avatar actual
+                </label>
+              )}
+              <span className="text-xs text-neutral-400">
+                JPG/PNG/WebP, máx. 3 MB. Se muestra igual en el panel y en el
+                menú público.
+              </span>
+            </div>
+          </div>
+        </div>
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-neutral-500">Moneda</span>

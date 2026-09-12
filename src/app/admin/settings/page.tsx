@@ -29,7 +29,7 @@ export default async function SettingsPage() {
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "name, slug, status, currency, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
+      "name, slug, status, currency, avatar_url, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
     )
     .eq("id", profile.local_id)
     .single();
@@ -53,6 +53,7 @@ export default async function SettingsPage() {
         local={{
           name: local?.name ?? "",
           currency,
+          avatarUrl: local?.avatar_url ?? null,
           description: local?.description ?? null,
           address: local?.address ?? null,
           phone: local?.phone ?? null,

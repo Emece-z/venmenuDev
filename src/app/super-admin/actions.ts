@@ -5,6 +5,8 @@ import { requireSuperAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePlan, SUBSCRIPTION_STATUSES } from "@/lib/plans";
+import { validateImageFile } from "@/lib/images";
+import { uploadLocalAvatar, removeLocalAvatar } from "@/lib/avatar";
 import type { FormState } from "@/lib/form-state";
 import type { LocalStatus, SubscriptionStatus } from "@/lib/types";
 
@@ -127,9 +129,35 @@ export async function updateLocal(
   }
 
   const supabase = await createClient();
+
+  let avatar: File | null;
+  try {
+    avatar = validateImageFile(formData.get("avatar"));
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Imagen inválida" };
+  }
+  const removeAvatar = formData.get("remove_avatar") === "on";
+
+  let avatarUrl: string | null | undefined;
+  try {
+    if (avatar) {
+      avatarUrl = await uploadLocalAvatar(supabase, localId, avatar);
+    } else if (removeAvatar) {
+      await removeLocalAvatar(supabase, localId);
+      avatarUrl = null;
+    }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "No se pudo actualizar el avatar" };
+  }
+
   const { error } = await supabase
     .from("locals")
-    .update({ name, slug, currency })
+    .update({
+      name,
+      slug,
+      currency,
+      ...(avatarUrl !== undefined ? { avatar_url: avatarUrl } : {}),
+    })
     .eq("id", localId);
   if (error) {
     if (error.code === "23505") {
