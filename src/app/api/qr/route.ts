@@ -6,6 +6,7 @@ import { env } from "@/lib/env";
 
 // Descarga del QR que apunta a /m/<slug> (para imprimir junto a la tarjeta NFC).
 // Generado 100% en el servidor con la librería `qrcode` (sin servicio externo).
+// Siempre PNG (formato único: se imprime igual y no hace falta elegir).
 // Acceso: el dueño solo para SU local; el super-admin para cualquiera.
 export async function GET(request: NextRequest) {
   const profile = await getCurrentProfile();
@@ -35,22 +36,13 @@ export async function GET(request: NextRequest) {
   }
 
   const url = `${env.SITE_URL}/m/${local.slug}`;
-  const wantsSvg = request.nextUrl.searchParams.get("format") === "svg";
-
-  if (wantsSvg) {
-    const svg = await QRCode.toString(url, { type: "svg", margin: 2, width: 512 });
-    return new NextResponse(svg, {
-      headers: {
-        "Content-Type": "image/svg+xml",
-        "Content-Disposition": `attachment; filename="qr-${local.slug}.svg"`,
-      },
-    });
-  }
-
   const png = await QRCode.toBuffer(url, { type: "png", margin: 2, width: 512 });
+
   return new NextResponse(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
+      // `attachment` + nombre de archivo: el navegador lo guarda directo en su
+      // carpeta de descargas por defecto, sin abrirlo ni navegar a otra página.
       "Content-Disposition": `attachment; filename="qr-${local.slug}.png"`,
     },
   });

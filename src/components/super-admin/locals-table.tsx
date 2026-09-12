@@ -155,7 +155,8 @@ function FragmentRow({
               {editing ? "Cerrar" : "Editar"}
             </button>
             <a
-              href={`/api/qr?slug=${l.slug}&format=png`}
+              href={`/api/qr?slug=${l.slug}`}
+              download={`qr-${l.slug}.png`}
               className="rounded border border-neutral-300 px-2 py-1 text-xs"
             >
               QR

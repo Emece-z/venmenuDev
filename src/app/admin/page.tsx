@@ -54,16 +54,11 @@ export default async function AdminHomePage() {
               Ver página pública: /m/{local.slug}
             </Link>
             <a
-              href={`/api/qr?slug=${local.slug}&format=png`}
+              href={`/api/qr?slug=${local.slug}`}
+              download={`qr-${local.slug}.png`}
               className="text-xs text-neutral-500 underline"
             >
               Descargar QR (PNG)
-            </a>
-            <a
-              href={`/api/qr?slug=${local.slug}&format=svg`}
-              className="text-xs text-neutral-500 underline"
-            >
-              Descargar QR (SVG)
             </a>
           </div>
         )}
