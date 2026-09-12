@@ -32,6 +32,12 @@ export type Local = {
   google_review_url: string | null;
   // Avatar/logo del local (0008). Editable por el dueño y por el super-admin.
   avatar_url: string | null;
+  // Paleta de color + banner del menú público (0009). Hex ("#rrggbb") o null
+  // = sin elegir (usa el default neutro, ver src/lib/theme.ts).
+  theme_bg: string | null;
+  theme_text: string | null;
+  theme_accent: string | null;
+  banner_url: string | null;
 };
 
 export type Profile = {

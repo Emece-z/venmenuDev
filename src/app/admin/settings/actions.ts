@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache";
 import { getOwnerContext } from "@/lib/owner";
 import { readWeekHoursFromForm, hasMeaningfulHours } from "@/lib/hours";
 import { validateImageFile } from "@/lib/images";
-import { uploadLocalAvatar, removeLocalAvatar } from "@/lib/avatar";
+import {
+  uploadLocalAvatar,
+  removeLocalAvatar,
+  uploadLocalBanner,
+  removeLocalBanner,
+} from "@/lib/local-media";
+import { isHexColor } from "@/lib/theme";
 import type { SettingsState } from "./state";
 
 const LIMITS = {
@@ -83,6 +89,37 @@ export async function updateLocalSettings(
     return { ok: false, error: e instanceof Error ? e.message : "No se pudo actualizar el avatar" };
   }
 
+  let banner: File | null;
+  try {
+    banner = validateImageFile(formData.get("banner"));
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Imagen inválida" };
+  }
+  const removeBanner = formData.get("remove_banner") === "on";
+
+  let bannerUrl: string | null | undefined;
+  try {
+    if (banner) {
+      bannerUrl = await uploadLocalBanner(supabase, profile.local_id, banner);
+    } else if (removeBanner) {
+      await removeLocalBanner(supabase, profile.local_id);
+      bannerUrl = null;
+    }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "No se pudo actualizar el banner" };
+  }
+
+  // Paleta: si vienen los 3 colores y son hex válidos, se guardan; si el
+  // form no los manda (no debería pasar, están siempre presentes), se dejan
+  // como estaban.
+  const themeBg = String(formData.get("theme_bg") ?? "");
+  const themeText = String(formData.get("theme_text") ?? "");
+  const themeAccent = String(formData.get("theme_accent") ?? "");
+  const hasTheme = themeBg || themeText || themeAccent;
+  if (hasTheme && !(isHexColor(themeBg) && isHexColor(themeText) && isHexColor(themeAccent))) {
+    return { ok: false, error: "Colores inválidos" };
+  }
+
   const googleReviewsEnabled = formData.get("google_reviews_enabled") === "on";
   // El valor se guarda tal cual se envíe, se muestre o no el checkbox: así
   // destildarlo nunca borra el link ya cargado, solo lo oculta en /m/[slug]
@@ -114,6 +151,10 @@ export async function updateLocalSettings(
       google_reviews_enabled: googleReviewsEnabled,
       google_review_url: googleReviewUrl,
       ...(avatarUrl !== undefined ? { avatar_url: avatarUrl } : {}),
+      ...(bannerUrl !== undefined ? { banner_url: bannerUrl } : {}),
+      ...(hasTheme
+        ? { theme_bg: themeBg, theme_text: themeText, theme_accent: themeAccent }
+        : {}),
     })
     .eq("id", profile.local_id);
   if (error) return { ok: false, error: error.message };

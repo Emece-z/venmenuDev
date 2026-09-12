@@ -676,3 +676,13 @@ create policy "local_avatars_write_delete" on storage.objects
       or public.is_super_admin()
     )
   );
+
+-- ###### 0009_local_theme.sql ######
+-- ============================================================
+-- 0009_local_theme.sql — Paleta de color + banner del menú público
+-- ============================================================
+alter table public.locals
+  add column if not exists theme_bg text,
+  add column if not exists theme_text text,
+  add column if not exists theme_accent text,
+  add column if not exists banner_url text;

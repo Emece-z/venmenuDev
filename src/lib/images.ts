@@ -26,6 +26,11 @@ export function localAvatarPath(localId: string): string {
   return `${localId}/avatar`;
 }
 
+// Banner del encabezado del menú público. Mismo bucket que el avatar.
+export function localBannerPath(localId: string): string {
+  return `${localId}/banner`;
+}
+
 // Valida un File recibido en un Server Action. Devuelve null si no hay archivo
 // (campo vacío); lanza si el archivo no cumple.
 export function validateImageFile(value: FormDataEntryValue | null): File | null {

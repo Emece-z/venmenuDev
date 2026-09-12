@@ -6,12 +6,16 @@ import Image from "next/image";
 import { updateLocalSettings } from "@/app/admin/settings/actions";
 import { initialSettingsState } from "@/app/admin/settings/state";
 import { WeekHoursFields } from "@/components/admin/week-hours-fields";
+import { ThemePicker } from "@/components/admin/theme-picker";
 import type { WeekHours } from "@/lib/hours";
+import type { LocalTheme } from "@/lib/theme";
 
 type LocalValues = {
   name: string;
   currency: string;
   avatarUrl: string | null;
+  bannerUrl: string | null;
+  theme: LocalTheme;
   description: string | null;
   address: string | null;
   phone: string | null;
@@ -103,6 +107,54 @@ export function SettingsForm({
             (USD, ARS…) altera cómo se leen los precios ya cargados.
           </span>
         </label>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-sm font-medium">Colores del menú público</legend>
+        <p className="text-xs text-neutral-500">
+          Elegí una paleta lista para usar, o tocá cada color para
+          personalizarlo. Se ve al momento en la vista previa de abajo.
+        </p>
+        <ThemePicker initialTheme={local.theme} />
+
+        <div className="flex flex-col gap-2 border-t border-neutral-100 pt-3">
+          <span className="text-sm text-neutral-500">
+            Imagen de fondo del encabezado (opcional)
+          </span>
+          <div className="flex items-center gap-3">
+            {local.bannerUrl ? (
+              <Image
+                src={local.bannerUrl}
+                alt="Banner del local"
+                width={96}
+                height={54}
+                className="h-14 w-24 shrink-0 rounded object-cover"
+              />
+            ) : (
+              <span className="flex h-14 w-24 shrink-0 items-center justify-center rounded bg-neutral-100 text-xs text-neutral-400">
+                sin imagen
+              </span>
+            )}
+            <div className="flex flex-col gap-1 text-sm">
+              <input
+                type="file"
+                name="banner"
+                accept="image/jpeg,image/png,image/webp"
+                className="text-sm"
+              />
+              {local.bannerUrl && (
+                <label className="flex items-center gap-2 text-xs text-neutral-600">
+                  <input type="checkbox" name="remove_banner" />
+                  Quitar imagen actual
+                </label>
+              )}
+              <span className="text-xs text-neutral-400">
+                Una imagen simple (sin texto encima) se ve mejor. JPG/PNG/WebP,
+                máx. 3 MB.
+              </span>
+            </div>
+          </div>
+        </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">

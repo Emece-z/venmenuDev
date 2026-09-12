@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { DAYS, dayHoursLabel, parseWeekHours } from "@/lib/hours";
+import { DEFAULT_THEME } from "@/lib/theme";
 import { WhatsAppIcon, InstagramIcon, GoogleIcon } from "@/components/brand-icons";
 
 // Página pública del menú. Sin login. Se abre al acercar el NFC o escanear el QR.
@@ -43,7 +44,7 @@ export default async function PublicMenuPage({
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "id, name, currency, avatar_url, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
+      "id, name, currency, avatar_url, banner_url, theme_bg, theme_text, theme_accent, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
     )
     .eq("slug", slug)
     .eq("status", "active")
@@ -90,27 +91,55 @@ export default async function PublicMenuPage({
     googleReviewUrl;
   const week = parseWeekHours(local.hours);
   const hasHeader = hasContact || local.description || week;
+  const theme = {
+    bg: local.theme_bg ?? DEFAULT_THEME.bg,
+    text: local.theme_text ?? DEFAULT_THEME.text,
+    accent: local.theme_accent ?? DEFAULT_THEME.accent,
+  };
 
   return (
-    <main className="mx-auto max-w-md px-4 py-6">
-      <header className={hasHeader ? "border-b border-neutral-200 pb-5" : ""}>
-        <div className="flex items-center gap-3">
+    <main
+      className="mx-auto min-h-dvh max-w-md bg-[var(--menu-bg)] px-4 py-6 text-[var(--menu-text)]"
+      style={
+        {
+          "--menu-bg": theme.bg,
+          "--menu-text": theme.text,
+          "--menu-accent": theme.accent,
+        } as React.CSSProperties
+      }
+    >
+      {local.banner_url && (
+        <div className="relative -mx-4 -mt-6 h-32 w-[calc(100%+2rem)] overflow-hidden sm:rounded-b-lg">
+          <Image src={local.banner_url} alt="" fill className="object-cover" priority />
+        </div>
+      )}
+      <header
+        className={
+          "border-[color:var(--menu-text)]/10" +
+          (hasHeader ? " border-b pb-5" : "") +
+          (local.banner_url ? " -mt-8" : "")
+        }
+      >
+        <div className="flex items-end gap-3">
           {local.avatar_url && (
             <Image
               src={local.avatar_url}
               alt=""
-              width={56}
-              height={56}
-              className="h-14 w-14 shrink-0 rounded-full object-cover"
+              width={local.banner_url ? 72 : 56}
+              height={local.banner_url ? 72 : 56}
+              className={
+                "shrink-0 rounded-full border-4 border-[var(--menu-bg)] object-cover" +
+                (local.banner_url ? " h-[72px] w-[72px]" : " h-14 w-14")
+              }
             />
           )}
           <h1 className="text-xl font-semibold">{local.name}</h1>
         </div>
         {local.description && (
-          <p className="mt-2 text-sm text-neutral-600">{local.description}</p>
+          <p className="mt-2 text-sm opacity-70">{local.description}</p>
         )}
         {hasContact && (
-          <div className="mt-3 flex flex-col gap-1 text-sm text-neutral-500">
+          <div className="mt-3 flex flex-col gap-1 text-sm opacity-80">
             {local.address && <p>{local.address}</p>}
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               {local.phone && (
@@ -156,7 +185,7 @@ export default async function PublicMenuPage({
         )}
 
         {week && (
-          <details className="group mt-3 text-sm text-neutral-500">
+          <details className="group mt-3 text-sm opacity-80">
             <summary className="flex w-fit cursor-pointer list-none items-center gap-1 [&::-webkit-details-marker]:hidden">
               <span className="underline">Horario de atención</span>
               <svg
@@ -191,11 +220,11 @@ export default async function PublicMenuPage({
           <details
             key={group.id}
             open={i === 0}
-            className="group border-b border-neutral-100 last:border-b-0"
+            className="group border-b border-[color:var(--menu-text)]/10 last:border-b-0"
           >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-3 text-sm font-semibold uppercase tracking-wide text-neutral-500 [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-3 text-sm font-semibold uppercase tracking-wide text-[var(--menu-accent)] [&::-webkit-details-marker]:hidden">
               <span>{group.name}</span>
-              <span className="flex items-center gap-2 text-xs font-normal normal-case text-neutral-400">
+              <span className="flex items-center gap-2 text-xs font-normal normal-case opacity-60">
                 {group.items.length}
                 <svg
                   viewBox="0 0 20 20"
@@ -211,7 +240,7 @@ export default async function PublicMenuPage({
                 </svg>
               </span>
             </summary>
-            <ul className="flex flex-col divide-y divide-neutral-100 pb-2">
+            <ul className="flex flex-col divide-y divide-[color:var(--menu-text)]/10 pb-2">
               {group.items.map((p) => (
                 <li key={p.id} className="flex gap-3 py-3">
                   {p.image_url && (
@@ -255,12 +284,10 @@ export default async function PublicMenuPage({
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">{p.name}</p>
                     {p.description && (
-                      <p className="mt-0.5 text-sm text-neutral-600">
-                        {p.description}
-                      </p>
+                      <p className="mt-0.5 text-sm opacity-70">{p.description}</p>
                     )}
                   </div>
-                  <p className="shrink-0 text-sm font-medium tabular-nums">
+                  <p className="shrink-0 text-sm font-semibold tabular-nums text-[var(--menu-accent)]">
                     {formatPrice(p.price_cents, local.currency)}
                   </p>
                 </li>
@@ -270,7 +297,7 @@ export default async function PublicMenuPage({
         ))}
 
         {byCategory.length === 0 && (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm opacity-70">
             Este menú todavía no tiene productos disponibles.
           </p>
         )}

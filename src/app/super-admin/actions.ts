@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePlan, SUBSCRIPTION_STATUSES } from "@/lib/plans";
 import { validateImageFile } from "@/lib/images";
-import { uploadLocalAvatar, removeLocalAvatar } from "@/lib/avatar";
+import { uploadLocalAvatar, removeLocalAvatar } from "@/lib/local-media";
 import type { FormState } from "@/lib/form-state";
 import type { LocalStatus, SubscriptionStatus } from "@/lib/types";
 

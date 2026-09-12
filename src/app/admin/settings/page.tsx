@@ -2,6 +2,7 @@ import { requireOwner } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { planLabel, subStatusLabel } from "@/lib/plans";
 import { parseWeekHours } from "@/lib/hours";
+import { DEFAULT_THEME } from "@/lib/theme";
 import { SettingsForm } from "@/components/admin/settings-form";
 
 // Monedas frecuentes en la región + algunas globales. Si el local ya tiene una
@@ -29,7 +30,7 @@ export default async function SettingsPage() {
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "name, slug, status, currency, avatar_url, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
+      "name, slug, status, currency, avatar_url, banner_url, theme_bg, theme_text, theme_accent, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
     )
     .eq("id", profile.local_id)
     .single();
@@ -54,6 +55,12 @@ export default async function SettingsPage() {
           name: local?.name ?? "",
           currency,
           avatarUrl: local?.avatar_url ?? null,
+          bannerUrl: local?.banner_url ?? null,
+          theme: {
+            bg: local?.theme_bg ?? DEFAULT_THEME.bg,
+            text: local?.theme_text ?? DEFAULT_THEME.text,
+            accent: local?.theme_accent ?? DEFAULT_THEME.accent,
+          },
           description: local?.description ?? null,
           address: local?.address ?? null,
           phone: local?.phone ?? null,
