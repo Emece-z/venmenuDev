@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
+
+export const metadata: Metadata = { title: "Sin local" };
 
 // Pantalla terminal para un usuario logueado que todavía no tiene un local
 // asignado. Evita el bucle de redirecciones entre /admin y /super-admin.

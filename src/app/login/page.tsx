@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { LoginForm } from "@/components/login-form";
+
+export const metadata: Metadata = { title: "Login" };
 
 // Login único para dueños de local y super-admin. El rol decide a dónde
 // se entra (lo resuelve la server action `signIn`).

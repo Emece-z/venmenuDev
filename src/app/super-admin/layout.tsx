@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { requireSuperAdmin } from "@/lib/auth";
+
+export const metadata: Metadata = { title: "Super Admin" };
 
 // Shell del panel de plataforma (vos). Solo rol super_admin.
 export default async function SuperAdminLayout({

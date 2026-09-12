@@ -18,9 +18,12 @@ import {
 // local suspendido cae en notFound() automáticamente.
 export const revalidate = 30; // cache de 30s: el menú no cambia a cada request
 
-// Título de la pestaña = nombre del local (en vez del "VenMenu" genérico del
-// layout raíz). Consulta liviana aparte: generateMetadata corre por separado
-// de la página y no puede reusar los datos que esta pide más abajo.
+// Título de la pestaña = nombre del local a secas (sin el prefijo "VenMenu | "
+// que aplica el template del layout raíz a todo lo demás): esta es la página
+// que ve el cliente final escaneando en la mesa, le importa el local, no la
+// plataforma. `title.absolute` ignora el template del padre a propósito.
+// Consulta liviana aparte: generateMetadata corre por separado de la página y
+// no puede reusar los datos que esta pide más abajo.
 export async function generateMetadata({
   params,
 }: {
@@ -35,7 +38,7 @@ export async function generateMetadata({
     .eq("status", "active")
     .single();
 
-  return { title: local?.name ?? "VenMenu" };
+  return { title: { absolute: local?.name ?? "VenMenu" } };
 }
 
 export default async function PublicMenuPage({

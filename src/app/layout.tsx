@@ -1,8 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+// `title.template` compone "VenMenu | <título de la página>" para toda
+// página que defina su propio `title` (login, super-admin, /admin según el
+// local, etc.); la que NO define nada (la landing, `/`) se queda con
+// `default`, o sea "VenMenu" a secas.
 export const metadata: Metadata = {
-  title: "VenMenu",
+  title: {
+    default: "VenMenu",
+    template: "VenMenu | %s",
+  },
   description: "Menús digitales para restaurantes y cafeterías vía NFC / QR",
 };
 
