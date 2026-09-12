@@ -37,6 +37,21 @@ export function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+// Pin de ubicación (dirección -> Google Maps). No es un ícono de marca, pero
+// vive acá junto a los demás íconos inline de la página pública.
+export function PinIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M12 2C7.86 2 4.5 5.36 4.5 9.5c0 5.25 6.34 11.5 7.02 12.17a.68.68 0 0 0 .96 0C13.16 21 19.5 14.75 19.5 9.5 19.5 5.36 16.14 2 12 2zm0 10.25a2.75 2.75 0 1 1 0-5.5 2.75 2.75 0 0 1 0 5.5z" />
+    </svg>
+  );
+}
+
 export function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg

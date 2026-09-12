@@ -5,7 +5,12 @@ import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { DAYS, dayHoursLabel, parseWeekHours } from "@/lib/hours";
 import { DEFAULT_THEME } from "@/lib/theme";
-import { WhatsAppIcon, InstagramIcon, GoogleIcon } from "@/components/brand-icons";
+import {
+  WhatsAppIcon,
+  InstagramIcon,
+  GoogleIcon,
+  PinIcon,
+} from "@/components/brand-icons";
 
 // Página pública del menú. Sin login. Se abre al acercar el NFC o escanear el QR.
 // Renderizada en el servidor (rápida, sin JS de cliente). Los datos se leen con
@@ -44,13 +49,19 @@ export default async function PublicMenuPage({
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "id, name, currency, avatar_url, banner_url, theme_bg, theme_text, theme_accent, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
+      "id, name, currency, avatar_url, banner_url, theme_bg, theme_text, theme_accent, description, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url, delivery_uber_url, delivery_rappi_url, delivery_pedidosya_url, delivery_own_enabled, delivery_own_whatsapp",
     )
     .eq("slug", slug)
     .eq("status", "active")
     .single();
 
   if (!local) notFound();
+
+  const { data: addresses } = await supabase
+    .from("local_addresses")
+    .select("id, label, address")
+    .eq("local_id", local.id)
+    .order("sort_order", { ascending: true });
 
   const { data: menu } = await supabase
     .from("menus")
@@ -84,11 +95,26 @@ export default async function PublicMenuPage({
       ? local.google_review_url
       : null;
   const hasContact =
-    local.address ||
+    (addresses && addresses.length > 0) ||
     local.phone ||
     local.whatsapp ||
     local.instagram ||
     googleReviewUrl;
+  const deliveryWaDigits = (local.delivery_own_whatsapp || local.whatsapp || "").replace(
+    /\D/g,
+    "",
+  );
+  const ownDeliveryWa =
+    local.delivery_own_enabled && deliveryWaDigits
+      ? `https://wa.me/${deliveryWaDigits}?text=${encodeURIComponent(
+          "Hola, quiero hacer un pedido para delivery",
+        )}`
+      : null;
+  const hasDelivery =
+    local.delivery_uber_url ||
+    local.delivery_rappi_url ||
+    local.delivery_pedidosya_url ||
+    ownDeliveryWa;
   const week = parseWeekHours(local.hours);
   const hasHeader = hasContact || local.description || week;
   const theme = {
@@ -135,9 +161,27 @@ export default async function PublicMenuPage({
           <p className="mt-2 text-sm opacity-70">{local.description}</p>
         )}
         {hasContact && (
-          <div className="mt-3 flex flex-col gap-1 text-sm opacity-80">
-            {local.address && <p>{local.address}</p>}
-            <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <div className="mt-3 flex flex-col gap-2 text-sm opacity-80">
+            {addresses && addresses.length > 0 && (
+              <div className="flex flex-col gap-1">
+                {addresses.map((a) => (
+                  <a
+                    key={a.id}
+                    href={mapsHref(a.address)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-start gap-1.5 underline"
+                  >
+                    <PinIcon className="mt-0.5 h-4 w-4 shrink-0 opacity-70" />
+                    <span>
+                      {a.label ? `${a.label}: ` : ""}
+                      {a.address}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap items-center gap-3">
               {local.phone && (
                 <a href={telHref(local.phone)} className="underline">
                   {local.phone}
@@ -148,10 +192,10 @@ export default async function PublicMenuPage({
                   href={waHref(local.whatsapp) as string}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1"
+                  aria-label="WhatsApp"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] text-white"
                 >
-                  <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
-                  <span className="underline">WhatsApp</span>
+                  <WhatsAppIcon className="h-4 w-4" />
                 </a>
               )}
               {local.instagram && (
@@ -159,10 +203,10 @@ export default async function PublicMenuPage({
                   href={igHref(local.instagram)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1"
+                  aria-label="Instagram"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white"
                 >
-                  <InstagramIcon className="h-4 w-4 text-[#E4405F]" />
-                  <span className="underline">{igLabel(local.instagram)}</span>
+                  <InstagramIcon className="h-4 w-4" />
                 </a>
               )}
               {googleReviewUrl && (
@@ -298,6 +342,57 @@ export default async function PublicMenuPage({
           </p>
         )}
       </div>
+
+      {hasDelivery && (
+        <div className="mt-8 border-t border-[color:var(--menu-text)]/10 pt-5">
+          <p className="text-xs font-semibold uppercase tracking-wide opacity-60">
+            Delivery
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {ownDeliveryWa && (
+              <a
+                href={ownDeliveryWa}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white"
+              >
+                <WhatsAppIcon className="h-4 w-4" />
+                Pedir por WhatsApp
+              </a>
+            )}
+            {local.delivery_uber_url && (
+              <a
+                href={local.delivery_uber_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center rounded-full bg-black px-3 py-1.5 text-xs font-semibold text-white"
+              >
+                Uber Eats
+              </a>
+            )}
+            {local.delivery_rappi_url && (
+              <a
+                href={local.delivery_rappi_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center rounded-full bg-[#FF441F] px-3 py-1.5 text-xs font-semibold text-white"
+              >
+                Rappi
+              </a>
+            )}
+            {local.delivery_pedidosya_url && (
+              <a
+                href={local.delivery_pedidosya_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center rounded-full bg-[#E7352C] px-3 py-1.5 text-xs font-semibold text-white"
+              >
+                PedidosYa
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -317,9 +412,8 @@ function igHref(v: string): string {
     ? t
     : `https://instagram.com/${t.replace(/^@/, "")}`;
 }
-function igLabel(v: string): string {
-  const m = v.trim().match(/instagram\.com\/([^/?#]+)/i);
-  return `@${(m ? m[1] : v.trim().replace(/^@/, "")).replace(/\/$/, "")}`;
+function mapsHref(address: string): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }
 
 type Cat = { id: string; name: string; sort_order: number };

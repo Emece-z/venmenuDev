@@ -686,3 +686,57 @@ alter table public.locals
   add column if not exists theme_text text,
   add column if not exists theme_accent text,
   add column if not exists banner_url text;
+
+-- ###### 0010_local_addresses.sql ######
+-- ============================================================
+-- 0010_local_addresses.sql — Direcciones del local (1 o varias sucursales)
+-- ============================================================
+create table if not exists public.local_addresses (
+  id uuid primary key default gen_random_uuid(),
+  local_id uuid not null references public.locals(id) on delete cascade,
+  label text,
+  address text not null,
+  sort_order int not null default 1,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists local_addresses_local_id_idx
+  on public.local_addresses(local_id);
+
+grant select on public.local_addresses to anon;
+grant select, insert, update, delete on public.local_addresses to authenticated;
+
+alter table public.local_addresses enable row level security;
+
+create policy local_addresses_select on public.local_addresses
+  for select to anon, authenticated
+  using (
+    public.owns_local(local_id)
+    or public.is_super_admin()
+    or exists (
+      select 1 from public.locals l
+      where l.id = local_addresses.local_id and l.status = 'active'
+    )
+  );
+
+create policy local_addresses_write on public.local_addresses
+  for all to authenticated
+  using (public.owns_local(local_id) or public.is_super_admin())
+  with check (public.owns_local(local_id) or public.is_super_admin());
+
+insert into public.local_addresses (local_id, address, sort_order)
+select id, address, 1
+from public.locals
+where address is not null and trim(address) <> '';
+
+-- ###### 0011_delivery.sql ######
+-- ============================================================
+-- 0011_delivery.sql — Delivery (apps externas + delivery propio)
+-- ============================================================
+alter table public.locals
+  add column if not exists delivery_uber_url      text,
+  add column if not exists delivery_rappi_url     text,
+  add column if not exists delivery_pedidosya_url text,
+  add column if not exists delivery_own_enabled   boolean not null default false,
+  add column if not exists delivery_own_whatsapp  text;
+  add column if not exists banner_url text;

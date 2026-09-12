@@ -86,9 +86,9 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   `text-[var(--menu-text)]`, acentos en categorías/precios/botones vía
   `text-[var(--menu-accent)]`); textos secundarios usan `opacity-*` en vez de
   grises fijos para funcionar también con paletas oscuras. El banner se
-  muestra a todo el ancho arriba del encabezado con el avatar superpuesto
-  (estilo "foto de portada"). Los íconos de WhatsApp/Instagram/Google
-  mantienen su color de marca — no se theming.
+  muestra a todo el ancho arriba del encabezado, sin superponerse al avatar
+  (que va al lado del nombre del local, siempre). Los íconos de
+  WhatsApp/Instagram/Google mantienen su color de marca — no se theming.
 - **Panel super-admin (`/super-admin`):** formulario **"Nuevo local + dueño"**
   en `CreateLocalForm` (`createLocalWithOwner`: crea local + usuario de login +
   vincula perfil con el cliente `service_role`, con rollback; incluye selector
@@ -112,17 +112,38 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   en `src/lib/images.ts` (JPG/PNG/WebP, 3 MB). Se muestran en `/admin/products`
   (miniatura + reemplazo/quitar en la edición) y en `/m/[slug]` (miniatura 64px).
 - **Página pública (`/m/[slug]`):** SSR, mobile-first, cache 30s, sin login.
-  Header con nombre + descripción/bienvenida + contacto (dirección, teléfono
-  `tel:`, WhatsApp `wa.me` con ícono, Instagram con ícono, y **reseña de
-  Google** con ícono si el dueño la activó) + **horario** en `<details>`
-  plegado. Íconos de marca inline en `src/components/brand-icons.tsx` (sin
-  librerías ni requests externos). Categorías **desplegables** (`<details>`
-  nativo, sin JS de cliente; la primera abierta). Foto de producto con
-  **lightbox** al tocar la miniatura (técnica `:target` en CSS puro, ver
-  `globals.css` — sin JS, no abre pestaña nueva, la imagen grande no se
-  descarga hasta que el usuario la abre: `loading="lazy"` + contenedor
+  Header con nombre + descripción/bienvenida + contacto: **direcciones**
+  (1 o varias, cada una con ícono de pin que linkea directo a Google Maps —
+  ver `local_addresses` más abajo), teléfono `tel:`, WhatsApp e Instagram como
+  **badges circulares de color** (solo ícono, sin texto — `bg-[#25D366]` y
+  gradiente Instagram respectivamente) y **reseña de Google** con ícono+texto
+  si el dueño la activó, + **horario** en `<details>` plegado. Al final de la
+  página, sección **Delivery** (solo si el dueño cargó algo): apps externas
+  (Uber Eats/Rappi/PedidosYa, cada una como badge de color con link directo)
+  y/o **delivery propio** (badge de WhatsApp con mensaje precargado, usando
+  `delivery_own_whatsapp` o si está vacío el `whatsapp` de contacto). Íconos
+  de marca inline en `src/components/brand-icons.tsx` (sin librerías ni
+  requests externos; incluye `PinIcon`). Categorías **desplegables**
+  (`<details>` nativo, sin JS de cliente; la primera abierta). Foto de
+  producto con **lightbox** al tocar la miniatura (técnica `:target` en CSS
+  puro, ver `globals.css` — sin JS, no abre pestaña nueva, la imagen grande no
+  se descarga hasta que el usuario la abre: `loading="lazy"` + contenedor
   `display:none`). RLS oculta locales suspendidos / menús no publicados /
   productos no disponibles.
+- **Direcciones (`0010_local_addresses.sql`):** tabla `local_addresses`
+  (`local_id`, `label` opcional, `address`, `sort_order`) — reemplaza el
+  antiguo campo único `locals.address` (se deja en la tabla sin usar, la
+  migración copia el valor existente como primera fila). Se editan en
+  `/admin/settings` con `AddressesManager` (mismo patrón que
+  `CategoriesManager`: alta + un "Guardar" para todas las filas, sin
+  arrastre — el orden de carga alcanza). Permite más de una sucursal.
+- **Delivery (`0011_delivery.sql`):** columnas en `locals` —
+  `delivery_uber_url` / `delivery_rappi_url` / `delivery_pedidosya_url`
+  (links opcionales a cada app) y `delivery_own_enabled` +
+  `delivery_own_whatsapp` (delivery propio por WhatsApp). Todo opcional y
+  editable solo desde `/admin/settings` (fieldset "Delivery" en
+  `SettingsForm`); si `delivery_own_enabled` y no hay ningún WhatsApp
+  cargado (ni el propio ni el de contacto), la action rechaza el guardado.
 - **QR del menú:** `GET /api/qr?slug=<slug>` (`src/app/api/qr/route.ts`) genera
   el QR **en el servidor** con la librería `qrcode` (npm, sin servicio de
   terceros, sin costo) apuntando a `${NEXT_PUBLIC_SITE_URL}/m/<slug>` y lo
@@ -133,11 +154,14 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   manual en la misma ruta (no cubierta por `middleware.ts`, que solo guarda
   `/admin` y `/super-admin`): dueño solo para su propio local, super-admin
   para cualquiera. Botones de descarga en `/admin` (resumen) y por fila en
-  `LocalsTable` (`/super-admin`).
-- **DB:** `supabase/migrations/0001_init.sql` … `0009_local_theme.sql` + `seed.sql`.
+  `LocalsTable` (`/super-admin`). En el resumen de `/admin` también hay un
+  campo de solo lectura + botón "Copiar" (`CopyLinkButton`) con la URL
+  pública completa (`${NEXT_PUBLIC_SITE_URL}/m/<slug>`), para que el dueño la
+  pegue en sus redes sociales.
+- **DB:** `supabase/migrations/0001_init.sql` … `0011_delivery.sql` + `seed.sql`.
   `supabase/setup.sql` es la concatenación de todo para pegar de una en el SQL
   Editor. **Ojo:** cada migración nueva hay que correrla en Supabase; si falta
-  alguna de `0005`–`0009`, `/m/[slug]` y `/admin/settings` fallan (el `select`
+  alguna de `0005`–`0011`, `/m/[slug]` y `/admin/settings` fallan (el `select`
   pide columnas que no existen).
 
 Pendiente (en este orden sugerido):

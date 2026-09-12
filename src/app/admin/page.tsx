@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getOwnerContext } from "@/lib/owner";
+import { env } from "@/lib/env";
+import { CopyLinkButton } from "@/components/admin/copy-link-button";
 import { toggleMenuPublished } from "./actions";
 
 export default async function AdminHomePage() {
@@ -60,6 +62,14 @@ export default async function AdminHomePage() {
             >
               Descargar QR (PNG)
             </a>
+          </div>
+        )}
+        {local && (
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-neutral-500">
+              Link para tus redes sociales
+            </span>
+            <CopyLinkButton url={`${env.SITE_URL}/m/${local.slug}`} />
           </div>
         )}
       </div>

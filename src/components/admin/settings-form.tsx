@@ -17,13 +17,17 @@ type LocalValues = {
   bannerUrl: string | null;
   theme: LocalTheme;
   description: string | null;
-  address: string | null;
   phone: string | null;
   whatsapp: string | null;
   instagram: string | null;
   hours: WeekHours | null;
   googleReviewsEnabled: boolean;
   googleReviewUrl: string | null;
+  deliveryOwnEnabled: boolean;
+  deliveryOwnWhatsapp: string | null;
+  deliveryUberUrl: string | null;
+  deliveryRappiUrl: string | null;
+  deliveryPedidosyaUrl: string | null;
 };
 
 export function SettingsForm({
@@ -40,6 +44,9 @@ export function SettingsForm({
     initialSettingsState,
   );
   const [googleEnabled, setGoogleEnabled] = useState(local.googleReviewsEnabled);
+  const [deliveryOwnEnabled, setDeliveryOwnEnabled] = useState(
+    local.deliveryOwnEnabled,
+  );
 
   return (
     <form
@@ -169,12 +176,6 @@ export function SettingsForm({
         </label>
 
         <Text
-          label="Dirección"
-          name="address"
-          defaultValue={local.address ?? ""}
-          placeholder="Av. Siempre Viva 742, Santiago"
-        />
-        <Text
           label="Teléfono"
           name="phone"
           defaultValue={local.phone ?? ""}
@@ -229,6 +230,52 @@ export function SettingsForm({
           público aparece plegado.
         </p>
         <WeekHoursFields defaultValue={local.hours} />
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-sm font-medium">Delivery</legend>
+        <p className="text-xs text-neutral-500">
+          Se muestra al final del menú público. Dejá vacío lo que no uses.
+        </p>
+
+        <div className="flex flex-col gap-2 border-b border-neutral-100 pb-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="delivery_own_enabled"
+              defaultChecked={deliveryOwnEnabled}
+              onChange={(e) => setDeliveryOwnEnabled(e.target.checked)}
+            />
+            Hacemos delivery propio (pedidos por WhatsApp)
+          </label>
+          <Text
+            label="WhatsApp para pedidos"
+            name="delivery_own_whatsapp"
+            defaultValue={local.deliveryOwnWhatsapp ?? ""}
+            placeholder="Vacío = usa el WhatsApp de arriba"
+            inputMode="tel"
+            dimmed={!deliveryOwnEnabled}
+          />
+        </div>
+
+        <Text
+          label="Link de Uber Eats"
+          name="delivery_uber_url"
+          defaultValue={local.deliveryUberUrl ?? ""}
+          placeholder="https://…"
+        />
+        <Text
+          label="Link de Rappi"
+          name="delivery_rappi_url"
+          defaultValue={local.deliveryRappiUrl ?? ""}
+          placeholder="https://…"
+        />
+        <Text
+          label="Link de PedidosYa"
+          name="delivery_pedidosya_url"
+          defaultValue={local.deliveryPedidosyaUrl ?? ""}
+          placeholder="https://…"
+        />
       </fieldset>
 
       <div className="flex items-center gap-3">

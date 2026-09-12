@@ -11,16 +11,19 @@ import {
   removeLocalBanner,
 } from "@/lib/local-media";
 import { isHexColor } from "@/lib/theme";
+import type { FormState } from "@/lib/form-state";
 import type { SettingsState } from "./state";
 
 const LIMITS = {
   name: 120,
   description: 600,
   address: 200,
+  address_label: 80,
   phone: 40,
   whatsapp: 40,
   instagram: 100,
   google_review_url: 300,
+  delivery_url: 300,
 } as const;
 
 function text(formData: FormData, key: string, max: number): string | null {
@@ -137,19 +140,52 @@ export async function updateLocalSettings(
     };
   }
 
+  const whatsapp = text(formData, "whatsapp", LIMITS.whatsapp);
+
+  const deliveryOwnEnabled = formData.get("delivery_own_enabled") === "on";
+  const deliveryOwnWhatsapp = text(formData, "delivery_own_whatsapp", LIMITS.whatsapp);
+  if (deliveryOwnEnabled && !deliveryOwnWhatsapp && !whatsapp) {
+    return {
+      ok: false,
+      error:
+        "Para el delivery propio agregá un WhatsApp (acá o en el de arriba, en Página pública)",
+    };
+  }
+
+  const deliveryUberUrl = text(formData, "delivery_uber_url", LIMITS.delivery_url);
+  const deliveryRappiUrl = text(formData, "delivery_rappi_url", LIMITS.delivery_url);
+  const deliveryPedidosyaUrl = text(
+    formData,
+    "delivery_pedidosya_url",
+    LIMITS.delivery_url,
+  );
+  for (const [label, v] of [
+    ["Uber Eats", deliveryUberUrl],
+    ["Rappi", deliveryRappiUrl],
+    ["PedidosYa", deliveryPedidosyaUrl],
+  ] as const) {
+    if (v && !isHttpUrl(v)) {
+      return { ok: false, error: `El link de ${label} no es una URL válida` };
+    }
+  }
+
   const { error } = await supabase
     .from("locals")
     .update({
       name,
       currency,
       description: text(formData, "description", LIMITS.description),
-      address: text(formData, "address", LIMITS.address),
       phone: text(formData, "phone", LIMITS.phone),
-      whatsapp: text(formData, "whatsapp", LIMITS.whatsapp),
+      whatsapp,
       instagram: text(formData, "instagram", LIMITS.instagram),
       hours: hasMeaningfulHours(week) ? week : null,
       google_reviews_enabled: googleReviewsEnabled,
       google_review_url: googleReviewUrl,
+      delivery_own_enabled: deliveryOwnEnabled,
+      delivery_own_whatsapp: deliveryOwnWhatsapp,
+      delivery_uber_url: deliveryUberUrl,
+      delivery_rappi_url: deliveryRappiUrl,
+      delivery_pedidosya_url: deliveryPedidosyaUrl,
       ...(avatarUrl !== undefined ? { avatar_url: avatarUrl } : {}),
       ...(bannerUrl !== undefined ? { banner_url: bannerUrl } : {}),
       ...(hasTheme
@@ -164,4 +200,88 @@ export async function updateLocalSettings(
   revalidatePath("/admin/products");
   if (local) revalidatePath(`/m/${local.slug}`);
   return { ok: true, error: null };
+}
+
+// ─────────────────────────────────────────────────────────────
+// Direcciones (0010): 1 o varias sucursales, en su propia tabla. Mismo
+// patrón que CategoriesManager (crear al final + un solo "Guardar" para
+// todas las filas), pero sin arrastre: el orden de carga alcanza.
+// ─────────────────────────────────────────────────────────────
+
+export async function createAddress(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { supabase, profile, local } = await getOwnerContext();
+
+  const address = text(formData, "address", LIMITS.address);
+  if (!address) return { ok: false, error: "La dirección es obligatoria" };
+  const label = text(formData, "label", LIMITS.address_label);
+
+  const { count } = await supabase
+    .from("local_addresses")
+    .select("id", { count: "exact", head: true })
+    .eq("local_id", profile.local_id);
+
+  const { error } = await supabase.from("local_addresses").insert({
+    local_id: profile.local_id,
+    address,
+    label,
+    sort_order: (count ?? 0) + 1,
+  });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/settings");
+  if (local) revalidatePath(`/m/${local.slug}`);
+  return { ok: true, error: null };
+}
+
+export async function saveAddresses(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { supabase, profile, local } = await getOwnerContext();
+
+  const ids = formData.getAll("ids").map(String).filter(Boolean);
+  const rawRows = ids.map((id, i) => ({
+    id,
+    address: text(formData, `address-${id}`, LIMITS.address),
+    label: text(formData, `label-${id}`, LIMITS.address_label),
+    sort_order: i + 1,
+  }));
+
+  if (rawRows.some((r) => !r.address)) {
+    return { ok: false, error: "La dirección no puede quedar vacía" };
+  }
+  const rows = rawRows as { id: string; address: string; label: string | null; sort_order: number }[];
+
+  for (const r of rows) {
+    const { error } = await supabase
+      .from("local_addresses")
+      .update({ address: r.address, label: r.label, sort_order: r.sort_order })
+      .eq("id", r.id)
+      .eq("local_id", profile.local_id);
+    if (error) return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/admin/settings");
+  if (local) revalidatePath(`/m/${local.slug}`);
+  return { ok: true, error: null };
+}
+
+// Simple (sin FormState): se dispara desde un botón `formAction` dentro del
+// form de "Guardar direcciones", mismo criterio que deleteCategory.
+export async function deleteAddress(id: string) {
+  const { supabase, profile, local } = await getOwnerContext();
+  if (!id) throw new Error("Falta id");
+
+  const { error } = await supabase
+    .from("local_addresses")
+    .delete()
+    .eq("id", id)
+    .eq("local_id", profile.local_id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/settings");
+  if (local) revalidatePath(`/m/${local.slug}`);
 }

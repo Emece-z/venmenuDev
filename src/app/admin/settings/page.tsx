@@ -4,6 +4,7 @@ import { planLabel, subStatusLabel } from "@/lib/plans";
 import { parseWeekHours } from "@/lib/hours";
 import { DEFAULT_THEME } from "@/lib/theme";
 import { SettingsForm } from "@/components/admin/settings-form";
+import { AddressesManager } from "@/components/admin/addresses-manager";
 
 // Monedas frecuentes en la región + algunas globales. Si el local ya tiene una
 // que no está en la lista, se agrega al principio para no perderla.
@@ -30,10 +31,16 @@ export default async function SettingsPage() {
   const { data: local } = await supabase
     .from("locals")
     .select(
-      "name, slug, status, currency, avatar_url, banner_url, theme_bg, theme_text, theme_accent, description, address, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url",
+      "name, slug, status, currency, avatar_url, banner_url, theme_bg, theme_text, theme_accent, description, phone, whatsapp, instagram, hours, google_reviews_enabled, google_review_url, delivery_uber_url, delivery_rappi_url, delivery_pedidosya_url, delivery_own_enabled, delivery_own_whatsapp",
     )
     .eq("id", profile.local_id)
     .single();
+
+  const { data: addresses } = await supabase
+    .from("local_addresses")
+    .select("id, label, address")
+    .eq("local_id", profile.local_id)
+    .order("sort_order", { ascending: true });
 
   const { data: subscription } = await supabase
     .from("subscriptions")
@@ -62,17 +69,32 @@ export default async function SettingsPage() {
             accent: local?.theme_accent ?? DEFAULT_THEME.accent,
           },
           description: local?.description ?? null,
-          address: local?.address ?? null,
           phone: local?.phone ?? null,
           whatsapp: local?.whatsapp ?? null,
           instagram: local?.instagram ?? null,
           hours: parseWeekHours(local?.hours ?? null),
           googleReviewsEnabled: local?.google_reviews_enabled ?? false,
           googleReviewUrl: local?.google_review_url ?? null,
+          deliveryOwnEnabled: local?.delivery_own_enabled ?? false,
+          deliveryOwnWhatsapp: local?.delivery_own_whatsapp ?? null,
+          deliveryUberUrl: local?.delivery_uber_url ?? null,
+          deliveryRappiUrl: local?.delivery_rappi_url ?? null,
+          deliveryPedidosyaUrl: local?.delivery_pedidosya_url ?? null,
         }}
         currencyOptions={currencyOptions}
         zeroDecimal={ZERO_DECIMAL}
       />
+
+      <section className="flex flex-col gap-3 rounded-lg border border-neutral-200 p-4">
+        <div>
+          <h2 className="text-sm font-medium">Direcciones</h2>
+          <p className="mt-1 text-xs text-neutral-500">
+            Se muestran en el menú público con un link directo a Google Maps.
+            Agregá más de una si tenés varias sucursales.
+          </p>
+        </div>
+        <AddressesManager addresses={addresses ?? []} />
+      </section>
 
       {/* Solo lectura */}
       <dl className="rounded-lg border border-neutral-200 p-4 text-sm">

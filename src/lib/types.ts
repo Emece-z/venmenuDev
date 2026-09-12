@@ -20,6 +20,8 @@ export type Local = {
   currency: string;
   created_at: string;
   // Datos públicos editables por el dueño (0005). Todos opcionales.
+  // `address` queda sin usar desde 0010 (reemplazado por local_addresses),
+  // se deja en la tabla para no perder datos históricos.
   description: string | null;
   address: string | null;
   phone: string | null;
@@ -38,6 +40,24 @@ export type Local = {
   theme_text: string | null;
   theme_accent: string | null;
   banner_url: string | null;
+  // Delivery (0011). Links opcionales a apps externas + delivery propio por
+  // WhatsApp (si `delivery_own_whatsapp` está vacío, se usa `whatsapp`).
+  delivery_uber_url: string | null;
+  delivery_rappi_url: string | null;
+  delivery_pedidosya_url: string | null;
+  delivery_own_enabled: boolean;
+  delivery_own_whatsapp: string | null;
+};
+
+// Direcciones del local (0010): 1 o varias sucursales. Cada una se muestra
+// en /m/[slug] con un ícono de ubicación que linkea a Google Maps.
+export type LocalAddress = {
+  id: string;
+  local_id: string;
+  label: string | null;
+  address: string;
+  sort_order: number;
+  created_at: string;
 };
 
 export type Profile = {
@@ -109,6 +129,7 @@ export type Database = {
       categories: TableDef<Category>;
       products: TableDef<Product>;
       subscriptions: TableDef<Subscription>;
+      local_addresses: TableDef<LocalAddress>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
