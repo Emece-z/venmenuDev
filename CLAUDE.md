@@ -40,8 +40,11 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   menú + descarga de **QR**.
   **Categorías** (`/admin/categories`): todo en el componente cliente
   `CategoriesManager` — alta con feedback inline, un solo botón "Guardar" que
-  persiste todas las filas a la vez (`saveCategories`, también con feedback),
-  `sort_order` mínimo 1.
+  persiste todas las filas a la vez (`saveCategories`, también con feedback).
+  El orden se **arrastra** (`@dnd-kit/core` + `/sortable` + `/utilities`: mouse,
+  touch y teclado), no se edita como número — `sort_order` que se manda al
+  guardar es la posición en la lista (índice + 1). Categoría nueva entra
+  siempre al final; se arrastra a su lugar después.
   **Productos** (`/admin/products`): alta en `CreateProductForm` (colapsable,
   feedback inline) + `ProductsManager` con buscador, filtro por
   categoría/disponibilidad, orden por columna y edición inline con feedback
