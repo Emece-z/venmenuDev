@@ -5,6 +5,14 @@
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
+
+  /* Colores de marca de VenMenu (el logo, no el theming por local — ese vive
+     en src/lib/theme.ts y es independiente). Se usan en la landing, el login
+     y en general la "cara" de la plataforma; /admin y /super-admin siguen en
+     escala de grises a propósito. Definidos como --color-* para que Tailwind
+     v4 genere solas las utilidades bg-brand-navy / text-brand-navy / etc. */
+  --color-brand-navy: #0c193c;
+  --color-brand-orange: #f9782d;
 }
 
 :root {

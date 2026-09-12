@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { LoginForm } from "@/components/login-form";
@@ -12,8 +13,16 @@ export default async function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-6">
-      <div>
-        <h1 className="text-xl font-semibold">Iniciar sesión</h1>
+      <div className="flex flex-col items-center text-center">
+        <Image
+          src="/logo-full.png"
+          alt="VenMenu"
+          width={900}
+          height={940}
+          priority
+          className="h-auto w-28"
+        />
+        <h1 className="mt-3 text-xl font-semibold">Iniciar sesión</h1>
         <p className="mt-1 text-sm text-neutral-600">
           Panel de administración de VenMenu.
         </p>
