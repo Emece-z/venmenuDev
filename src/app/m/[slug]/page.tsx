@@ -393,6 +393,18 @@ export default async function PublicMenuPage({
           </div>
         </div>
       )}
+
+      <div className="mt-8 flex justify-center border-t border-[color:var(--menu-text)]/10 pt-4">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs opacity-50 hover:opacity-80"
+        >
+          <Image src="/logo-icon.png" alt="" width={14} height={14} />
+          Creado por VenMenu
+        </a>
+      </div>
     </main>
   );
 }
