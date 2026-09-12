@@ -33,7 +33,7 @@ export function CreateProductForm({
           <span className="text-neutral-500">Descripción</span>
           <input
             name="description"
-            className="rounded border border-neutral-300 px-2 py-1"
+            className="rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -67,7 +67,7 @@ export function CreateProductForm({
         <div className="flex items-center gap-3 sm:col-span-2">
           <button
             disabled={pending}
-            className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+            className="rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
           >
             {pending ? "Agregando…" : "Agregar producto"}
           </button>
@@ -108,7 +108,7 @@ function Field({
         required={required}
         placeholder={placeholder}
         inputMode={inputMode}
-        className="rounded border border-neutral-300 px-2 py-1"
+        className="rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
       />
     </label>
   );

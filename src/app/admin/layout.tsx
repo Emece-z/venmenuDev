@@ -47,11 +47,20 @@ export default async function AdminLayout({
               </p>
             </div>
           </div>
-          <form action="/auth/signout" method="post">
-            <button className="text-xs text-neutral-600 underline">
-              Salir
-            </button>
-          </form>
+          <div className="flex shrink-0 items-center gap-3">
+            <div className="hidden items-center gap-1.5 sm:flex">
+              <Image src="/logo-icon.png" alt="" width={16} height={16} />
+              <span className="text-xs font-medium text-neutral-400">
+                <span className="text-brand-navy">Ven</span>
+                <span className="text-brand-orange">Menu</span>
+              </span>
+            </div>
+            <form action="/auth/signout" method="post">
+              <button className="text-xs text-neutral-600 underline">
+                Salir
+              </button>
+            </form>
+          </div>
         </div>
         <AdminNav />
       </header>

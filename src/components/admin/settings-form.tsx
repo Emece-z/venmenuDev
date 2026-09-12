@@ -171,7 +171,7 @@ export function SettingsForm({
             maxLength={600}
             defaultValue={local.description ?? ""}
             placeholder="Ej. Café de especialidad en el centro. Pastelería propia todos los días."
-            className="rounded border border-neutral-300 px-2 py-1"
+            className="rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
           />
         </label>
 
@@ -281,7 +281,7 @@ export function SettingsForm({
       <div className="flex items-center gap-3">
         <button
           disabled={pending}
-          className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
         >
           {pending ? "Guardando…" : "Guardar"}
         </button>
@@ -333,7 +333,7 @@ function Text({
         readOnly={dimmed}
         aria-disabled={dimmed}
         className={
-          "rounded border border-neutral-300 px-2 py-1" +
+          "rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy" +
           (dimmed ? " bg-neutral-50 text-neutral-400" : "")
         }
       />

@@ -46,7 +46,7 @@ export function WeekHoursFields({
               readOnly={isClosed}
               aria-label={`${d.label} abre`}
               className={
-                "rounded border border-neutral-300 px-2 py-1" +
+                "rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy" +
                 (isClosed ? " bg-neutral-50 text-neutral-400" : "")
               }
             />
@@ -58,7 +58,7 @@ export function WeekHoursFields({
               readOnly={isClosed}
               aria-label={`${d.label} cierra`}
               className={
-                "rounded border border-neutral-300 px-2 py-1" +
+                "rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy" +
                 (isClosed ? " bg-neutral-50 text-neutral-400" : "")
               }
             />

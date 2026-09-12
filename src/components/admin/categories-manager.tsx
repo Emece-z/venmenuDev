@@ -80,13 +80,13 @@ export function CategoriesManager({ categories }: { categories: Category[] }) {
             name="name"
             required
             placeholder="Ej. Cafés"
-            className="rounded border border-neutral-300 px-2 py-1"
+            className="rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
           />
         </label>
         <input type="hidden" name="sort_order" value={items.length + 1} />
         <button
           disabled={createPending}
-          className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
         >
           {createPending ? "Agregando…" : "Agregar"}
         </button>
@@ -130,7 +130,7 @@ export function CategoriesManager({ categories }: { categories: Category[] }) {
           <div className="flex items-center gap-3">
             <button
               disabled={savePending}
-              className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+              className="rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
             >
               {savePending ? "Guardando…" : "Guardar cambios"}
             </button>
@@ -184,7 +184,7 @@ function SortableRow({ category, index }: { category: Category; index: number })
           name={`name-${category.id}`}
           defaultValue={category.name}
           required
-          className="w-full rounded border border-neutral-300 px-2 py-1"
+          className="w-full rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
         />
       </label>
       <button

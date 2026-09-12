@@ -24,7 +24,7 @@ export function CopyLinkButton({ url }: { url: string }) {
         readOnly
         value={url}
         onFocus={(e) => e.currentTarget.select()}
-        className="w-full min-w-0 flex-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs text-neutral-600"
+        className="w-full min-w-0 flex-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs text-neutral-600 outline-none focus:border-brand-navy"
       />
       <button
         type="button"

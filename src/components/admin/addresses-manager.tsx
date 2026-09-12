@@ -39,7 +39,7 @@ export function AddressesManager({ addresses }: { addresses: Address[] }) {
           <input
             name="label"
             placeholder="Ej. Sucursal Centro"
-            className="w-full max-w-full rounded border border-neutral-300 px-2 py-1"
+            className="w-full max-w-full rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
           />
         </label>
         <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
@@ -48,12 +48,12 @@ export function AddressesManager({ addresses }: { addresses: Address[] }) {
             name="address"
             required
             placeholder="Av. Siempre Viva 742, Santiago"
-            className="w-full max-w-full rounded border border-neutral-300 px-2 py-1"
+            className="w-full max-w-full rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
           />
         </label>
         <button
           disabled={createPending}
-          className="shrink-0 rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+          className="shrink-0 rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
         >
           {createPending ? "Agregando…" : "Agregar"}
         </button>
@@ -79,7 +79,7 @@ export function AddressesManager({ addresses }: { addresses: Address[] }) {
                 <input
                   name={`label-${a.id}`}
                   defaultValue={a.label ?? ""}
-                  className="w-full max-w-full rounded border border-neutral-300 px-2 py-1"
+                  className="w-full max-w-full rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
                 />
               </label>
               <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
@@ -88,7 +88,7 @@ export function AddressesManager({ addresses }: { addresses: Address[] }) {
                   name={`address-${a.id}`}
                   defaultValue={a.address}
                   required
-                  className="w-full max-w-full rounded border border-neutral-300 px-2 py-1"
+                  className="w-full max-w-full rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
                 />
               </label>
               <button
@@ -103,7 +103,7 @@ export function AddressesManager({ addresses }: { addresses: Address[] }) {
           <div className="flex items-center gap-3">
             <button
               disabled={savePending}
-              className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+              className="rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
             >
               {savePending ? "Guardando…" : "Guardar direcciones"}
             </button>

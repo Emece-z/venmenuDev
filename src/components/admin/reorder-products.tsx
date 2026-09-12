@@ -135,7 +135,7 @@ export function ReorderProducts({
       <div className="flex items-center gap-3">
         <button
           disabled={pending}
-          className="self-start rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+          className="self-start rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
         >
           {pending ? "Guardando…" : "Guardar orden"}
         </button>

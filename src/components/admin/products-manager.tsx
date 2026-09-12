@@ -100,7 +100,7 @@ export function ProductsManager({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar producto…"
-          className="w-full max-w-xs rounded border border-neutral-300 px-2 py-1 text-sm"
+          className="w-full max-w-xs rounded border border-neutral-300 px-2 py-1 text-sm outline-none focus:border-brand-navy"
         />
         <select
           value={categoryFilter}
@@ -294,7 +294,7 @@ function Row({
                 <input
                   name="description"
                   defaultValue={p.description ?? ""}
-                  className="rounded border border-neutral-300 px-2 py-1"
+                  className="rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm">
@@ -360,7 +360,7 @@ function Row({
               <div className="flex items-center gap-3 sm:col-span-2">
                 <button
                   disabled={pending}
-                  className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                  className="rounded bg-brand-navy px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
                 >
                   {pending ? "Guardando…" : "Guardar"}
                 </button>
@@ -404,7 +404,7 @@ function LabeledInput({
         defaultValue={defaultValue}
         required={required}
         inputMode={inputMode}
-        className="rounded border border-neutral-300 px-2 py-1"
+        className="rounded border border-neutral-300 px-2 py-1 outline-none focus:border-brand-navy"
       />
     </label>
   );

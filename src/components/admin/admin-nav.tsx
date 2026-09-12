@@ -27,7 +27,7 @@ export function AdminNav() {
             href={l.href}
             className={
               active
-                ? "font-semibold text-neutral-900 underline"
+                ? "font-semibold text-brand-navy underline"
                 : "text-neutral-500"
             }
           >
