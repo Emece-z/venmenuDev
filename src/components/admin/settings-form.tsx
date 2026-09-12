@@ -67,23 +67,20 @@ export function SettingsForm({
                 sin foto
               </span>
             )}
-            <div className="flex flex-col gap-1 text-sm">
+            <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
               <input
                 type="file"
                 name="avatar"
                 accept="image/jpeg,image/png,image/webp"
-                className="text-sm"
+                className="w-full max-w-full text-xs"
               />
               {local.avatarUrl && (
                 <label className="flex items-center gap-2 text-xs text-neutral-600">
                   <input type="checkbox" name="remove_avatar" />
-                  Quitar avatar actual
+                  Quitar avatar
                 </label>
               )}
-              <span className="text-xs text-neutral-400">
-                JPG/PNG/WebP, máx. 3 MB. Se muestra igual en el panel y en el
-                menú público.
-              </span>
+              <span className="text-xs text-neutral-400">JPG/PNG/WebP, máx. 3 MB</span>
             </div>
           </div>
         </div>
@@ -118,9 +115,7 @@ export function SettingsForm({
         <ThemePicker initialTheme={local.theme} />
 
         <div className="flex flex-col gap-2 border-t border-neutral-100 pt-3">
-          <span className="text-sm text-neutral-500">
-            Imagen de fondo del encabezado (opcional)
-          </span>
+          <span className="text-sm text-neutral-500">Banner (opcional)</span>
           <div className="flex items-center gap-3">
             {local.bannerUrl ? (
               <Image
@@ -135,22 +130,21 @@ export function SettingsForm({
                 sin imagen
               </span>
             )}
-            <div className="flex flex-col gap-1 text-sm">
+            <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
               <input
                 type="file"
                 name="banner"
                 accept="image/jpeg,image/png,image/webp"
-                className="text-sm"
+                className="w-full max-w-full text-xs"
               />
               {local.bannerUrl && (
                 <label className="flex items-center gap-2 text-xs text-neutral-600">
                   <input type="checkbox" name="remove_banner" />
-                  Quitar imagen actual
+                  Quitar imagen
                 </label>
               )}
               <span className="text-xs text-neutral-400">
-                Una imagen simple (sin texto encima) se ve mejor. JPG/PNG/WebP,
-                máx. 3 MB.
+                Sin texto encima. Máx. 3 MB
               </span>
             </div>
           </div>

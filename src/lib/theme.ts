@@ -25,8 +25,13 @@ export function isHexColor(v: string): boolean {
 // McDonald's (fondo blanco, letras negras, acento amarillo) que pidió el dueño.
 export const THEME_PRESETS: { key: string; label: string; theme: LocalTheme }[] = [
   {
+    key: "blanco_negro",
+    label: "Blanco y negro",
+    theme: { ...DEFAULT_THEME },
+  },
+  {
     key: "clasico",
-    label: "Clásico",
+    label: "Clásico amarillo",
     theme: { bg: "#ffffff", text: "#171717", accent: "#F2B705" },
   },
   {

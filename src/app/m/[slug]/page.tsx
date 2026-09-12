@@ -111,25 +111,35 @@ export default async function PublicMenuPage({
       {local.banner_url && (
         <div className="relative -mx-4 -mt-6 h-32 w-[calc(100%+2rem)] overflow-hidden sm:rounded-b-lg">
           <Image src={local.banner_url} alt="" fill className="object-cover" priority />
+          {/* Avatar superpuesto al borde inferior del banner, estilo Facebook:
+              circular, mitad sobre la foto y mitad por debajo. */}
+          {local.avatar_url && (
+            <Image
+              src={local.avatar_url}
+              alt=""
+              width={72}
+              height={72}
+              className="absolute bottom-0 left-4 h-[72px] w-[72px] translate-y-1/2 rounded-full border-4 border-[var(--menu-bg)] object-cover"
+            />
+          )}
         </div>
       )}
       <header
         className={
           "border-[color:var(--menu-text)]/10" +
           (hasHeader ? " border-b pb-5" : "") +
-          (local.banner_url ? " -mt-8" : "")
+          (local.banner_url ? " pt-10" : "")
         }
       >
         <div className="flex items-end gap-3">
-          {local.avatar_url && (
+          {!local.banner_url && local.avatar_url && (
             <Image
               src={local.avatar_url}
               alt=""
-              width={local.banner_url ? 72 : 56}
-              height={local.banner_url ? 72 : 56}
+              width={56}
+              height={56}
               className={
-                "shrink-0 rounded-full border-4 border-[var(--menu-bg)] object-cover" +
-                (local.banner_url ? " h-[72px] w-[72px]" : " h-14 w-14")
+                "h-14 w-14 shrink-0 rounded-full border-4 border-[var(--menu-bg)] object-cover"
               }
             />
           )}

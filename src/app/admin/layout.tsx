@@ -1,7 +1,7 @@
-import Link from "next/link";
 import Image from "next/image";
 import { requireOwner } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { AdminNav } from "@/components/admin/admin-nav";
 
 // Shell del panel del dueño de local. `requireOwner()` es la segunda barrera
 // (el middleware ya filtró por área); además carga el local para el header.
@@ -53,12 +53,7 @@ export default async function AdminLayout({
             </button>
           </form>
         </div>
-        <nav className="mx-auto flex max-w-3xl gap-4 px-4 pb-2 text-sm">
-          <Link href="/admin">Inicio</Link>
-          <Link href="/admin/products">Productos</Link>
-          <Link href="/admin/categories">Categorías</Link>
-          <Link href="/admin/settings">Ajustes</Link>
-        </nav>
+        <AdminNav />
       </header>
       <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
     </div>

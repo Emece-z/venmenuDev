@@ -29,7 +29,10 @@ export function ThemePicker({ initialTheme }: { initialTheme: LocalTheme }) {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-end gap-4">
+      <p className="text-xs text-neutral-400">
+        Acento = categorías, precios y botones.
+      </p>
+      <div className="flex flex-wrap gap-4">
         <ColorField
           label="Fondo"
           value={theme.bg}
@@ -41,7 +44,7 @@ export function ThemePicker({ initialTheme }: { initialTheme: LocalTheme }) {
           onChange={(v) => setTheme((t) => ({ ...t, text: v }))}
         />
         <ColorField
-          label="Acento (categorías, precios, botones)"
+          label="Acento"
           value={theme.accent}
           onChange={(v) => setTheme((t) => ({ ...t, accent: v }))}
         />
