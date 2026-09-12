@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -10,6 +11,26 @@ import { WhatsAppIcon, InstagramIcon, GoogleIcon } from "@/components/brand-icon
 // la anon key: RLS solo deja ver locales activos y menús publicados, así que un
 // local suspendido cae en notFound() automáticamente.
 export const revalidate = 30; // cache de 30s: el menú no cambia a cada request
+
+// Título de la pestaña = nombre del local (en vez del "VenMenu" genérico del
+// layout raíz). Consulta liviana aparte: generateMetadata corre por separado
+// de la página y no puede reusar los datos que esta pide más abajo.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: local } = await supabase
+    .from("locals")
+    .select("name")
+    .eq("slug", slug)
+    .eq("status", "active")
+    .single();
+
+  return { title: local?.name ?? "VenMenu" };
+}
 
 export default async function PublicMenuPage({
   params,
