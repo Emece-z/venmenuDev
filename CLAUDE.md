@@ -70,10 +70,25 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   fotos de producto, las políticas dejan escribir tanto al **dueño**
   (`owns_local`) como al **super-admin** (`is_super_admin`) — se edita desde
   ambos paneles con el cliente normal, sin `service_role`. Helpers en
-  `src/lib/avatar.ts` (`uploadLocalAvatar`/`removeLocalAvatar`, reusados por
-  `admin/settings/actions.ts` y `super-admin/actions.ts`). Se muestra en
-  `/admin/settings`, `/super-admin` (`LocalsTable`), header de `/admin` y en
-  el header de `/m/[slug]` junto al nombre.
+  `src/lib/local-media.ts` (`uploadLocalAvatar`/`removeLocalAvatar` +
+  `uploadLocalBanner`/`removeLocalBanner`, mismo bucket, ruta `<local_id>/banner`).
+  Se muestra en `/admin/settings`, `/super-admin` (`LocalsTable`), header de
+  `/admin` y en el header de `/m/[slug]` junto al nombre.
+- **Paleta de color + banner del menú público (`0009_local_theme.sql`):**
+  `src/lib/theme.ts` — `LocalTheme` (`bg`/`text`/`accent`, hex), 6 presets
+  curados (`THEME_PRESETS`, incluye uno tipo McDonald's: blanco/negro/amarillo),
+  `DEFAULT_THEME` neutro (= look de antes de esta feature si el dueño no
+  elige nada), `isLowContrast` (aviso WCAG, no bloqueante). Se edita **solo
+  desde `/admin/settings`** (no desde super-admin) con `ThemePicker`
+  (presets con un clic + 3 `<input type="color">` + vista previa en vivo) +
+  el banner (mismo flujo que el avatar, opcional). En `/m/[slug]` se aplica
+  con variables CSS sobre `<main>` (`bg-[var(--menu-bg)]`,
+  `text-[var(--menu-text)]`, acentos en categorías/precios/botones vía
+  `text-[var(--menu-accent)]`); textos secundarios usan `opacity-*` en vez de
+  grises fijos para funcionar también con paletas oscuras. El banner se
+  muestra a todo el ancho arriba del encabezado con el avatar superpuesto
+  (estilo "foto de portada"). Los íconos de WhatsApp/Instagram/Google
+  mantienen su color de marca — no se theming.
 - **Panel super-admin (`/super-admin`):** formulario **"Nuevo local + dueño"**
   en `CreateLocalForm` (`createLocalWithOwner`: crea local + usuario de login +
   vincula perfil con el cliente `service_role`, con rollback; incluye selector
@@ -119,10 +134,10 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   `/admin` y `/super-admin`): dueño solo para su propio local, super-admin
   para cualquiera. Botones de descarga en `/admin` (resumen) y por fila en
   `LocalsTable` (`/super-admin`).
-- **DB:** `supabase/migrations/0001_init.sql` … `0008_local_avatar.sql` + `seed.sql`.
+- **DB:** `supabase/migrations/0001_init.sql` … `0009_local_theme.sql` + `seed.sql`.
   `supabase/setup.sql` es la concatenación de todo para pegar de una en el SQL
   Editor. **Ojo:** cada migración nueva hay que correrla en Supabase; si falta
-  alguna de `0005`–`0008`, `/m/[slug]` y `/admin/settings` fallan (el `select`
+  alguna de `0005`–`0009`, `/m/[slug]` y `/admin/settings` fallan (el `select`
   pide columnas que no existen).
 
 Pendiente (en este orden sugerido):
