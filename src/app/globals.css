@@ -21,3 +21,51 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Lightbox de foto de producto en /m/[slug] — puro CSS (sin JS), con la
+   técnica del `:target`: el link de la miniatura salta a `#foto-<id>` y el
+   propio navegador activa `:target`; un link a `#` lo cierra. La imagen
+   grande usa `loading="lazy"` (default de next/image) + está en un
+   contenedor `display:none`, así que el navegador no la descarga hasta que
+   el usuario realmente la abre. */
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.lightbox:target {
+  display: flex;
+}
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 85%);
+}
+.lightbox-body {
+  position: relative;
+  width: min(92vw, 640px);
+  height: min(85vh, 640px);
+}
+.lightbox-img {
+  object-fit: contain;
+}
+.lightbox-close {
+  position: absolute;
+  top: -0.9rem;
+  right: -0.9rem;
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: white;
+  color: black;
+  font-size: 1rem;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 30%);
+}

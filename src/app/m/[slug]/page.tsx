@@ -183,13 +183,42 @@ export default async function PublicMenuPage({
               {group.items.map((p) => (
                 <li key={p.id} className="flex gap-3 py-3">
                   {p.image_url && (
-                    <Image
-                      src={p.image_url}
-                      alt={p.name}
-                      width={64}
-                      height={64}
-                      className="h-16 w-16 shrink-0 rounded-md object-cover"
-                    />
+                    <>
+                      {/* Miniatura: salta al lightbox sin abrir pestaña ni
+                          recargar la página (ancla a #foto-<id>, puro CSS). */}
+                      <a
+                        href={`#foto-${p.id}`}
+                        className="block shrink-0"
+                        aria-label={`Ver foto de ${p.name} más grande`}
+                      >
+                        <Image
+                          src={p.image_url}
+                          alt={p.name}
+                          width={64}
+                          height={64}
+                          className="h-16 w-16 rounded-md object-cover"
+                        />
+                      </a>
+                      <div id={`foto-${p.id}`} className="lightbox">
+                        <a
+                          href="#"
+                          className="lightbox-backdrop"
+                          aria-label="Cerrar"
+                        />
+                        <div className="lightbox-body">
+                          <Image
+                            src={p.image_url}
+                            alt={p.name}
+                            fill
+                            sizes="640px"
+                            className="lightbox-img"
+                          />
+                          <a href="#" className="lightbox-close" aria-label="Cerrar">
+                            ✕
+                          </a>
+                        </div>
+                      </div>
+                    </>
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">{p.name}</p>
