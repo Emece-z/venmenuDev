@@ -132,7 +132,7 @@ export function SettingsForm({
             name="google_review_url"
             defaultValue={local.googleReviewUrl ?? ""}
             placeholder="https://g.page/r/…/review"
-            disabled={!googleEnabled}
+            dimmed={!googleEnabled}
           />
         </div>
       </fieldset>
@@ -175,7 +175,7 @@ function Text({
   required,
   placeholder,
   inputMode,
-  disabled,
+  dimmed,
 }: {
   label: string;
   name: string;
@@ -183,7 +183,11 @@ function Text({
   required?: boolean;
   placeholder?: string;
   inputMode?: "tel" | "text";
-  disabled?: boolean;
+  // Visualmente "apagado" mientras el checkbox que lo gobierna está destildado,
+  // pero SIN `disabled`: un input disabled no se envía al guardar y borraría
+  // el valor guardado apenas se apretara "Guardar" con el checkbox destildado.
+  // `readOnly` bloquea la edición pero sigue viajando en el form.
+  dimmed?: boolean;
 }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
@@ -194,8 +198,12 @@ function Text({
         required={required}
         placeholder={placeholder}
         inputMode={inputMode}
-        disabled={disabled}
-        className="rounded border border-neutral-300 px-2 py-1 disabled:opacity-40"
+        readOnly={dimmed}
+        aria-disabled={dimmed}
+        className={
+          "rounded border border-neutral-300 px-2 py-1" +
+          (dimmed ? " bg-neutral-50 text-neutral-400" : "")
+        }
       />
     </label>
   );

@@ -4,7 +4,10 @@ import { useState } from "react";
 import { DAYS, type DayKey, type WeekHours } from "@/lib/hours";
 
 // Editor del horario semanal. Una fila por día: checkbox "Cerrado" + rango
-// horario. Al marcar "Cerrado" se deshabilitan (y no se envían) los `time`.
+// horario. Al marcar "Cerrado" los `time` quedan de solo lectura (`readOnly`,
+// NO `disabled`): un input disabled no se envía al guardar y borraría el
+// horario ya cargado con solo tildar y destildar "Cerrado". Con `readOnly` el
+// valor viaja igual; el server ignora los horarios cuando closed=true.
 export function WeekHoursFields({
   defaultValue,
 }: {
@@ -40,18 +43,24 @@ export function WeekHoursFields({
               type="time"
               name={`hours-${d.key}-open`}
               defaultValue={dv?.open ?? ""}
-              disabled={isClosed}
+              readOnly={isClosed}
               aria-label={`${d.label} abre`}
-              className="rounded border border-neutral-300 px-2 py-1 disabled:opacity-40"
+              className={
+                "rounded border border-neutral-300 px-2 py-1" +
+                (isClosed ? " bg-neutral-50 text-neutral-400" : "")
+              }
             />
             <span className="text-neutral-400">a</span>
             <input
               type="time"
               name={`hours-${d.key}-close`}
               defaultValue={dv?.close ?? ""}
-              disabled={isClosed}
+              readOnly={isClosed}
               aria-label={`${d.label} cierra`}
-              className="rounded border border-neutral-300 px-2 py-1 disabled:opacity-40"
+              className={
+                "rounded border border-neutral-300 px-2 py-1" +
+                (isClosed ? " bg-neutral-50 text-neutral-400" : "")
+              }
             />
           </div>
         );

@@ -62,6 +62,9 @@ export async function updateLocalSettings(
   const week = readWeekHoursFromForm(formData);
 
   const googleReviewsEnabled = formData.get("google_reviews_enabled") === "on";
+  // El valor se guarda tal cual se envíe, se muestre o no el checkbox: así
+  // destildarlo nunca borra el link ya cargado, solo lo oculta en /m/[slug]
+  // (que ya filtra por `google_reviews_enabled && google_review_url`).
   const googleReviewUrl = text(
     formData,
     "google_review_url",

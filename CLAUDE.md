@@ -149,6 +149,13 @@ Pendiente (en este orden sugerido):
 - Un archivo `"use server"` **solo puede exportar funciones async**. El estado
   inicial y los tipos para `useActionState` van en un módulo aparte (ej.
   `src/app/admin/settings/state.ts`), no en el `actions.ts`.
+- **Nunca usar `disabled` en un input cuyo valor hay que preservar** (ej. un
+  campo que un checkbox "activa/desactiva" para mostrarlo en público). Un input
+  `disabled` NO se envía en el `FormData` al enviar el form, así que guardar con
+  el checkbox destildado borra el valor. Usar `readOnly` (+ clases para que se
+  vea apagado): el valor viaja igual y el server decide si lo muestra. Bug real
+  encontrado y corregido el 2026-09-12 en `SettingsForm` (Google reviews) y
+  `WeekHoursFields` (horario) — ver `src/lib/hours.ts` y `settings-form.tsx`.
 - Windows es case-insensitive: no crear carpetas que difieran solo en mayúsculas.
 - Shell primario PowerShell 5.1: sin `&&` / `||` / ternario. Para robocopy y
   comandos con flags `/X`, usar PowerShell (Git Bash traduce mal las rutas `/E`).
