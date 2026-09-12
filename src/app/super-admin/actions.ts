@@ -5,6 +5,7 @@ import { requireSuperAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePlan, SUBSCRIPTION_STATUSES } from "@/lib/plans";
+import type { FormState } from "@/lib/form-state";
 import type { LocalStatus, SubscriptionStatus } from "@/lib/types";
 
 // Mismo formato que exige el CHECK `locals_slug_format` en la base.
@@ -15,7 +16,10 @@ const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 //  - crear el login necesita la Admin API (auth.admin.createUser)
 //  - asignar local_id al perfil de OTRO usuario lo bloquea RLS para el super-admin
 // Los triggers de la base crean solos el menú y la suscripción del local.
-export async function createLocalWithOwner(formData: FormData) {
+export async function createLocalWithOwner(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   await requireSuperAdmin();
 
   const name = String(formData.get("name") ?? "").trim();
@@ -33,15 +37,16 @@ export async function createLocalWithOwner(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "").trim() || null;
 
-  if (!name) throw new Error("El nombre del local es obligatorio");
+  if (!name) return { ok: false, error: "El nombre del local es obligatorio" };
   if (!SLUG_RE.test(slug)) {
-    throw new Error(
-      "El slug debe ser minúsculas, números y guiones (ej. cafe-central)",
-    );
+    return {
+      ok: false,
+      error: "El slug debe ser minúsculas, números y guiones (ej. cafe-central)",
+    };
   }
-  if (!email) throw new Error("El email del dueño es obligatorio");
+  if (!email) return { ok: false, error: "El email del dueño es obligatorio" };
   if (password.length < 8) {
-    throw new Error("La contraseña debe tener al menos 8 caracteres");
+    return { ok: false, error: "La contraseña debe tener al menos 8 caracteres" };
   }
 
   const admin = createAdminClient();
@@ -54,16 +59,13 @@ export async function createLocalWithOwner(formData: FormData) {
     .single();
   if (localErr || !local) {
     if (localErr?.code === "23505") {
-      throw new Error(`Ya existe un local con el slug "${slug}"`);
+      return { ok: false, error: `Ya existe un local con el slug "${slug}"` };
     }
-    throw new Error(localErr?.message ?? "No se pudo crear el local");
+    return { ok: false, error: localErr?.message ?? "No se pudo crear el local" };
   }
 
   // 1b. Ajustar el plan de la suscripción recién creada por el trigger.
-  await admin
-    .from("subscriptions")
-    .update({ plan })
-    .eq("local_id", local.id);
+  await admin.from("subscriptions").update({ plan }).eq("local_id", local.id);
 
   // 2. Crear el usuario dueño (login inmediato, sin verificación de mail).
   const { data: created, error: userErr } = await admin.auth.admin.createUser({
@@ -74,7 +76,10 @@ export async function createLocalWithOwner(formData: FormData) {
   });
   if (userErr || !created?.user) {
     await admin.from("locals").delete().eq("id", local.id); // rollback
-    throw new Error(userErr?.message ?? "No se pudo crear el usuario dueño");
+    return {
+      ok: false,
+      error: userErr?.message ?? "No se pudo crear el usuario dueño",
+    };
   }
 
   // 3. Vincular el perfil (lo creó el trigger handle_new_user) al local.
@@ -87,15 +92,19 @@ export async function createLocalWithOwner(formData: FormData) {
   if (profErr) {
     await admin.auth.admin.deleteUser(created.user.id); // rollback
     await admin.from("locals").delete().eq("id", local.id);
-    throw new Error(profErr.message);
+    return { ok: false, error: profErr.message };
   }
 
   revalidatePath("/super-admin");
+  return { ok: true, error: null };
 }
 
 // Editar los datos del local. Cambiar el slug rompe los QR/NFC ya impresos
 // que apuntan al slug anterior (el aviso está en la UI).
-export async function updateLocal(formData: FormData) {
+export async function updateLocal(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   await requireSuperAdmin();
 
   const localId = String(formData.get("localId") ?? "");
@@ -108,12 +117,13 @@ export async function updateLocal(formData: FormData) {
       .trim()
       .toUpperCase() || "CLP";
 
-  if (!localId) throw new Error("Falta el local");
-  if (!name) throw new Error("El nombre es obligatorio");
+  if (!localId) return { ok: false, error: "Falta el local" };
+  if (!name) return { ok: false, error: "El nombre es obligatorio" };
   if (!SLUG_RE.test(slug)) {
-    throw new Error(
-      "El slug debe ser minúsculas, números y guiones (ej. cafe-central)",
-    );
+    return {
+      ok: false,
+      error: "El slug debe ser minúsculas, números y guiones (ej. cafe-central)",
+    };
   }
 
   const supabase = await createClient();
@@ -123,26 +133,30 @@ export async function updateLocal(formData: FormData) {
     .eq("id", localId);
   if (error) {
     if (error.code === "23505") {
-      throw new Error(`Ya existe otro local con el slug "${slug}"`);
+      return { ok: false, error: `Ya existe otro local con el slug "${slug}"` };
     }
-    throw new Error(error.message);
+    return { ok: false, error: error.message };
   }
 
   revalidatePath("/super-admin");
   revalidatePath(`/m/${slug}`);
+  return { ok: true, error: null };
 }
 
 // Ajustar plan y estado de la suscripción a mano (hasta integrar cobros).
-export async function updateSubscription(formData: FormData) {
+export async function updateSubscription(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   await requireSuperAdmin();
 
   const localId = String(formData.get("localId") ?? "");
   const plan = normalizePlan(formData.get("plan"));
   const status = String(formData.get("status") ?? "") as SubscriptionStatus;
 
-  if (!localId) throw new Error("Falta el local");
+  if (!localId) return { ok: false, error: "Falta el local" };
   if (!SUBSCRIPTION_STATUSES.includes(status)) {
-    throw new Error("Estado de suscripción inválido");
+    return { ok: false, error: "Estado de suscripción inválido" };
   }
 
   const supabase = await createClient();
@@ -150,14 +164,17 @@ export async function updateSubscription(formData: FormData) {
     .from("subscriptions")
     .update({ plan, status })
     .eq("local_id", localId);
-  if (error) throw new Error(error.message);
+  if (error) return { ok: false, error: error.message };
 
   revalidatePath("/super-admin");
+  return { ok: true, error: null };
 }
 
 // Activar / suspender el acceso público de un local.
 // Cuando integremos pagos, este mismo cambio lo hará un job automático al
-// detectar mensualidad impaga; por ahora es manual desde el panel.
+// detectar mensualidad impaga; por ahora es manual desde el panel. Se deja
+// como action "simple" (sin FormState): es un toggle de un clic con
+// prácticamente ningún caso de error real de cara al usuario.
 export async function setLocalStatus(formData: FormData) {
   await requireSuperAdmin();
 

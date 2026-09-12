@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Image from "next/image";
 import { formatPrice } from "@/lib/format";
 import { centsToInput } from "@/lib/money";
@@ -9,6 +9,7 @@ import {
   deleteProduct,
   toggleProductAvailability,
 } from "@/app/admin/products/actions";
+import { initialFormState } from "@/lib/form-state";
 
 type Category = { id: string; name: string };
 type Product = {
@@ -211,6 +212,8 @@ function Row({
   catLabel: string;
   onToggleEdit: () => void;
 }) {
+  const [state, action, pending] = useActionState(updateProduct, initialFormState);
+
   return (
     <>
       <tr className="border-b border-neutral-100 align-top">
@@ -276,7 +279,7 @@ function Row({
       {editing && (
         <tr className="border-b border-neutral-200 bg-neutral-50">
           <td colSpan={5} className="px-3 py-4">
-            <form action={updateProduct} className="grid gap-3 sm:grid-cols-2">
+            <form action={action} className="grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={p.id} />
               <LabeledInput label="Nombre" name="name" defaultValue={p.name} required />
               <LabeledInput
@@ -363,10 +366,23 @@ function Row({
                 </div>
               </div>
 
-              <div className="sm:col-span-2">
-                <button className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white">
-                  Guardar
+              <div className="flex items-center gap-3 sm:col-span-2">
+                <button
+                  disabled={pending}
+                  className="rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {pending ? "Guardando…" : "Guardar"}
                 </button>
+                {state.error && (
+                  <p className="text-sm text-red-600" role="alert">
+                    {state.error}
+                  </p>
+                )}
+                {state.ok && !state.error && (
+                  <p className="text-sm text-green-700" role="status">
+                    Guardado ✓
+                  </p>
+                )}
               </div>
             </form>
           </td>

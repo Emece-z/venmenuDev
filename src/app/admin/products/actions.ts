@@ -5,12 +5,16 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getOwnerContext } from "@/lib/owner";
 import { parsePriceToCents } from "@/lib/money";
 import type { Database } from "@/lib/types";
+import type { FormState } from "@/lib/form-state";
 import {
   PRODUCT_IMAGES_BUCKET,
   productImagePath,
   validateImageFile,
 } from "@/lib/images";
 
+// Lee y valida los campos comunes. Puede lanzar (precio inválido, nombre
+// vacío, imagen inválida) — los callers lo envuelven en try/catch y lo
+// convierten en FormState en vez de dejar que reviente la pantalla de Next.
 function readForm(formData: FormData, currency: string) {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -61,12 +65,25 @@ async function removeProductImage(
     .remove([productImagePath(localId, productId)]);
 }
 
-export async function createProduct(formData: FormData) {
-  const { supabase, menu, profile, currency } = await getOwnerContext();
-  if (!menu) throw new Error("El local no tiene menú");
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : "Ocurrió un error inesperado";
+}
 
-  const values = readForm(formData, currency);
-  const image = validateImageFile(formData.get("image"));
+export async function createProduct(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { supabase, menu, profile, currency } = await getOwnerContext();
+  if (!menu) return { ok: false, error: "El local no tiene menú" };
+
+  let values: ReturnType<typeof readForm>;
+  let image: File | null;
+  try {
+    values = readForm(formData, currency);
+    image = validateImageFile(formData.get("image"));
+  } catch (e) {
+    return { ok: false, error: errorMessage(e) };
+  }
 
   const { data: created, error } = await supabase
     .from("products")
@@ -78,42 +95,67 @@ export async function createProduct(formData: FormData) {
     })
     .select("id")
     .single();
-  if (error) throw new Error(error.message);
+  if (error) return { ok: false, error: error.message };
 
   if (image && created) {
-    const url = await uploadProductImage(
-      supabase,
-      profile.local_id,
-      created.id,
-      image,
-    );
-    await supabase
-      .from("products")
-      .update({ image_url: url })
-      .eq("id", created.id)
-      .eq("local_id", profile.local_id);
+    try {
+      const url = await uploadProductImage(
+        supabase,
+        profile.local_id,
+        created.id,
+        image,
+      );
+      await supabase
+        .from("products")
+        .update({ image_url: url })
+        .eq("id", created.id)
+        .eq("local_id", profile.local_id);
+    } catch (e) {
+      // El producto ya se creó; solo la imagen falló. Se avisa pero no se
+      // deshace el alta (el dueño puede subirla de nuevo editando el producto).
+      revalidatePath("/admin/products");
+      revalidatePath("/admin");
+      return {
+        ok: false,
+        error: `El producto se creó, pero la imagen no se pudo subir: ${errorMessage(e)}`,
+      };
+    }
   }
 
   revalidatePath("/admin/products");
   revalidatePath("/admin");
+  return { ok: true, error: null };
 }
 
-export async function updateProduct(formData: FormData) {
+export async function updateProduct(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const { supabase, profile, currency } = await getOwnerContext();
 
   const id = String(formData.get("id") ?? "");
-  if (!id) throw new Error("Falta id");
+  if (!id) return { ok: false, error: "Falta id" };
 
-  const values = readForm(formData, currency);
-  const image = validateImageFile(formData.get("image"));
+  let values: ReturnType<typeof readForm>;
+  let image: File | null;
+  try {
+    values = readForm(formData, currency);
+    image = validateImageFile(formData.get("image"));
+  } catch (e) {
+    return { ok: false, error: errorMessage(e) };
+  }
   const removeImage = formData.get("remove_image") === "on";
 
   let imageUrl: string | null | undefined;
-  if (image) {
-    imageUrl = await uploadProductImage(supabase, profile.local_id, id, image);
-  } else if (removeImage) {
-    await removeProductImage(supabase, profile.local_id, id);
-    imageUrl = null;
+  try {
+    if (image) {
+      imageUrl = await uploadProductImage(supabase, profile.local_id, id, image);
+    } else if (removeImage) {
+      await removeProductImage(supabase, profile.local_id, id);
+      imageUrl = null;
+    }
+  } catch (e) {
+    return { ok: false, error: errorMessage(e) };
   }
 
   const { error } = await supabase
@@ -125,13 +167,15 @@ export async function updateProduct(formData: FormData) {
     })
     .eq("id", id)
     .eq("local_id", profile.local_id);
-  if (error) throw new Error(error.message);
+  if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/products");
   revalidatePath("/admin");
+  return { ok: true, error: null };
 }
 
 // Atajo: activar/desactivar disponibilidad sin abrir el formulario completo.
+// Sin FormState: un solo clic, sin campos que puedan fallar validación.
 export async function toggleProductAvailability(formData: FormData) {
   const { supabase, profile } = await getOwnerContext();
 

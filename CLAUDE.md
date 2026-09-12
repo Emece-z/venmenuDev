@@ -30,33 +30,41 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   en `profiles.role`. Guard por área en `src/middleware.ts` + `requireOwner()` /
   `requireSuperAdmin()` como segunda barrera. Pantalla `/sin-local` para usuario
   sin local asignado (evita bucle de redirects).
+- **Feedback inline (`useActionState`) en (casi) todos los forms** — error u
+  "OK ✓" en la misma pantalla, sin la pantalla roja de Next. Estado compartido
+  en `src/lib/form-state.ts` (`FormState` = `{ ok, error }`). Actions que
+  siguen "simples" (sin FormState, `throw` + botón de un clic, casi sin
+  casos de error reales): `deleteCategory`, `deleteProduct`,
+  `toggleProductAvailability`, `setLocalStatus`.
 - **Panel dueño (`/admin`):** resumen con contadores + toggle publicar/ocultar
-  menú; **CRUD de categorías** (`/admin/categories`, un solo botón "Guardar" que
-  persiste todas las filas a la vez vía `saveCategories`; `sort_order` mínimo 1);
-  **CRUD de productos** (`/admin/products`): form de alta colapsable + componente
-  cliente `ProductsManager` con buscador, filtro por categoría/disponibilidad,
-  orden por columna y edición inline (expande la fila). Las server actions
-  (`createProduct`/`updateProduct`/`deleteProduct`/`toggleProductAvailability`)
-  no cambiaron.
-  **Ajustes** (`/admin/settings`): componente cliente `SettingsForm` con
-  `useActionState` (errores/OK inline, sin la pantalla roja de Next). El dueño
+  menú + descarga de **QR**.
+  **Categorías** (`/admin/categories`): todo en el componente cliente
+  `CategoriesManager` — alta con feedback inline, un solo botón "Guardar" que
+  persiste todas las filas a la vez (`saveCategories`, también con feedback),
+  `sort_order` mínimo 1.
+  **Productos** (`/admin/products`): alta en `CreateProductForm` (colapsable,
+  feedback inline) + `ProductsManager` con buscador, filtro por
+  categoría/disponibilidad, orden por columna y edición inline con feedback
+  (`updateProduct`); `deleteProduct`/`toggleProductAvailability` quedaron simples.
+  **Ajustes** (`/admin/settings`): componente cliente `SettingsForm`. El dueño
   edita nombre, moneda (valida ISO 4217 contra `Intl`), los **datos públicos
-  del local** (descripción/bienvenida, dirección, teléfono, WhatsApp, Instagram)
+  del local** (descripción/bienvenida, dirección, teléfono, WhatsApp, Instagram),
   el **horario de atención** semanal (`WeekHoursFields`: rango horario por día
   + checkbox "Cerrado"; helpers en `src/lib/hours.ts`, guardado en `locals.hours`
   jsonb) y el **link de reseña de Google** (checkbox "Mostrar link…" que habilita
   el campo de URL; solo tiene sentido si el local está registrado en Google con
-  el nombre del comercio — se lo aclara en la ayuda del campo; `locals.google_reviews_enabled`
-  + `google_review_url`). `updateLocalSettings` devuelve `SettingsState`. Slug,
-  estado y suscripción son solo lectura (los toca el super-admin).
+  el nombre del comercio — se lo aclara en la ayuda del campo;
+  `locals.google_reviews_enabled` + `google_review_url`). Slug, estado y
+  suscripción son solo lectura (los toca el super-admin).
 - **Panel super-admin (`/super-admin`):** formulario **"Nuevo local + dueño"**
-  (`createLocalWithOwner`: crea local + usuario de login + vincula perfil con el
-  cliente `service_role`, con rollback; incluye selector de **plan**). Lista de
-  locales en el componente cliente `LocalsTable`: buscador por nombre/slug,
-  toggle "solo suspendidos", contador de productos y estado del menú por fila,
-  y edición inline → `updateLocal` (nombre/slug/moneda; el slug es editable con
-  aviso de que rompe QR/NFC) + `updateSubscription` (plan + estado). **No hay
-  borrado de locales**: solo suspender/reactivar (`setLocalStatus`).
+  en `CreateLocalForm` (`createLocalWithOwner`: crea local + usuario de login +
+  vincula perfil con el cliente `service_role`, con rollback; incluye selector
+  de **plan**; feedback inline). Lista de locales en el componente cliente
+  `LocalsTable`: buscador por nombre/slug, toggle "solo suspendidos", contador
+  de productos, estado del menú y descarga de **QR** por fila, y edición
+  inline con feedback → `updateLocal` (nombre/slug/moneda; el slug es editable
+  con aviso de que rompe QR/NFC) + `updateSubscription` (plan + estado). **No
+  hay borrado de locales**: solo suspender/reactivar (`setLocalStatus`, simple).
 - **Planes:** `src/lib/plans.ts` — `PLANS` = `basico | estandar | premium`
   (placeholder, valores en `subscriptions.plan`), `planLabel`, estados de
   suscripción y sus etiquetas. Módulo plano (sin `use server`) para usarlo en
@@ -76,15 +84,23 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
   Google** con ícono si el dueño la activó) + **horario** en `<details>`
   plegado. Íconos de marca inline en `src/components/brand-icons.tsx` (sin
   librerías ni requests externos). Categorías **desplegables** (`<details>`
-  nativo, sin JS de cliente; la primera abierta). RLS oculta locales
-  suspendidos / menús no publicados / productos no disponibles.
-- **QR del menú:** `GET /api/qr?slug=<slug>&format=png|svg` (`src/app/api/qr/route.ts`)
-  genera el QR **en el servidor** con la librería `qrcode` (npm, sin servicio de
-  terceros, sin costo) apuntando a `${NEXT_PUBLIC_SITE_URL}/m/<slug>` y lo devuelve
-  como descarga (`Content-Disposition: attachment`). Autorización manual en la
-  misma ruta (no cubierta por `middleware.ts`, que solo guarda `/admin` y
-  `/super-admin`): dueño solo para su propio local, super-admin para cualquiera.
-  Botones de descarga en `/admin` (resumen) y por fila en `LocalsTable` (`/super-admin`).
+  nativo, sin JS de cliente; la primera abierta). Foto de producto con
+  **lightbox** al tocar la miniatura (técnica `:target` en CSS puro, ver
+  `globals.css` — sin JS, no abre pestaña nueva, la imagen grande no se
+  descarga hasta que el usuario la abre: `loading="lazy"` + contenedor
+  `display:none`). RLS oculta locales suspendidos / menús no publicados /
+  productos no disponibles.
+- **QR del menú:** `GET /api/qr?slug=<slug>` (`src/app/api/qr/route.ts`) genera
+  el QR **en el servidor** con la librería `qrcode` (npm, sin servicio de
+  terceros, sin costo) apuntando a `${NEXT_PUBLIC_SITE_URL}/m/<slug>` y lo
+  devuelve como descarga PNG (único formato) con `Content-Disposition:
+  attachment` + el link lleva `download=` para forzar guardado directo (si el
+  navegador tiene activado "preguntar dónde guardar cada archivo", eso es
+  ajeno al sitio: se apaga desde la config del propio navegador). Autorización
+  manual en la misma ruta (no cubierta por `middleware.ts`, que solo guarda
+  `/admin` y `/super-admin`): dueño solo para su propio local, super-admin
+  para cualquiera. Botones de descarga en `/admin` (resumen) y por fila en
+  `LocalsTable` (`/super-admin`).
 - **DB:** `supabase/migrations/0001_init.sql` … `0007_google_reviews.sql` + `seed.sql`.
   `supabase/setup.sql` es la concatenación de todo para pegar de una en el SQL
   Editor. **Ojo:** cada migración nueva hay que correrla en Supabase; si falta
@@ -93,11 +109,9 @@ Hecho y verificado (`tsc` + `eslint` en verde; ver gotcha sobre `next build`):
 
 Pendiente (en este orden sugerido):
 
-1. Extender el feedback de errores inline (`useActionState`) al resto de forms
-   que hoy tiran la pantalla de Next: alta en `/super-admin`, categorías,
-   productos. `/admin/settings` ya está hecho.
-2. Generar el QR y grabar el NFC apuntando a `/m/[slug]`.
-3. **Módulo de pagos** (tótem + mensualidad, webhook, job que suspende por impago). Fuera de alcance hasta que se pida.
+1. Grabar el NFC apuntando a `/m/[slug]` (físico, fuera del código; el QR de
+   respaldo ya está listo).
+2. **Módulo de pagos** (tótem + mensualidad, webhook, job que suspende por impago). Fuera de alcance hasta que se pida.
 
 ## Modelo de datos
 
@@ -130,6 +144,14 @@ Pendiente (en este orden sugerido):
   postgrest-js los resuelve como `never`). Cuando el esquema esté estable:
   `supabase gen types typescript`.
 - Versiones alineadas a propósito: `@supabase/ssr@^0.12` con `@supabase/supabase-js@^2.116`.
+- Server Action con feedback inline en la UI (error o "OK ✓" sin la pantalla de
+  Next): firma `(prevState: FormState, formData) => Promise<FormState>` (tipo
+  en `src/lib/form-state.ts`), consumida con `useActionState` desde un
+  componente cliente. Si la acción se llama desde un botón `formAction` dentro
+  de OTRO form ya envuelto en `useActionState` (ej. "Eliminar" en una fila),
+  esa acción puede seguir siendo simple (`(formData) => void`, `throw` en vez
+  de retornar) — no hace falta que todas comportan la misma firma dentro de un
+  mismo form.
 
 ## Entorno / gotchas
 

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getOwnerContext } from "@/lib/owner";
+import type { FormState } from "@/lib/form-state";
 
 // RLS ya garantiza que un dueño solo toque su local; los `.eq("local_id", …)`
 // son defensa extra y evitan errores tontos.
@@ -13,13 +14,16 @@ function readOrder(raw: FormDataEntryValue | null): number {
   return Number.isFinite(n) && n >= 1 ? n : 1;
 }
 
-export async function createCategory(formData: FormData) {
+export async function createCategory(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const { supabase, menu, profile } = await getOwnerContext();
-  if (!menu) throw new Error("El local no tiene menú");
+  if (!menu) return { ok: false, error: "El local no tiene menú" };
 
   const name = String(formData.get("name") ?? "").trim();
   const sortOrder = readOrder(formData.get("sort_order"));
-  if (!name) throw new Error("El nombre es obligatorio");
+  if (!name) return { ok: false, error: "El nombre es obligatorio" };
 
   const { error } = await supabase.from("categories").insert({
     menu_id: menu.id,
@@ -27,16 +31,20 @@ export async function createCategory(formData: FormData) {
     name,
     sort_order: sortOrder,
   });
-  if (error) throw new Error(error.message);
+  if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/categories");
   revalidatePath("/admin/products");
   revalidatePath("/admin");
+  return { ok: true, error: null };
 }
 
 // Guarda TODAS las categorías de una vez (un solo botón "Guardar" en la UI).
 // El formulario manda un `ids` por fila y los campos `name-<id>` / `sort_order-<id>`.
-export async function saveCategories(formData: FormData) {
+export async function saveCategories(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const { supabase, profile } = await getOwnerContext();
 
   const ids = formData.getAll("ids").map(String).filter(Boolean);
@@ -47,7 +55,7 @@ export async function saveCategories(formData: FormData) {
   }));
 
   if (rows.some((r) => !r.name)) {
-    throw new Error("El nombre de una categoría no puede quedar vacío");
+    return { ok: false, error: "El nombre de una categoría no puede quedar vacío" };
   }
 
   for (const r of rows) {
@@ -56,14 +64,18 @@ export async function saveCategories(formData: FormData) {
       .update({ name: r.name, sort_order: r.sort_order })
       .eq("id", r.id)
       .eq("local_id", profile.local_id);
-    if (error) throw new Error(error.message);
+    if (error) return { ok: false, error: error.message };
   }
 
   revalidatePath("/admin/categories");
   revalidatePath("/admin/products");
   revalidatePath("/admin");
+  return { ok: true, error: null };
 }
 
+// Sin FormState: se dispara desde un botón `formAction` dentro del form de
+// "Guardar cambios"; borrar una categoría casi no tiene casos de error reales
+// de cara al usuario (el id siempre es válido, viene de la propia fila).
 export async function deleteCategory(formData: FormData) {
   const { supabase, profile } = await getOwnerContext();
 

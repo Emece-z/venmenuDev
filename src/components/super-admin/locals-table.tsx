@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   setLocalStatus,
   updateLocal,
   updateSubscription,
 } from "@/app/super-admin/actions";
+import { initialFormState } from "@/lib/form-state";
 import {
   PLANS,
   planLabel,
@@ -115,6 +116,15 @@ function FragmentRow({
   editing: boolean;
   onToggleEdit: () => void;
 }) {
+  const [localState, localAction, localPending] = useActionState(
+    updateLocal,
+    initialFormState,
+  );
+  const [subState, subAction, subPending] = useActionState(
+    updateSubscription,
+    initialFormState,
+  );
+
   return (
     <>
       <tr className="border-b border-neutral-100 align-top">
@@ -181,7 +191,7 @@ function FragmentRow({
           <td colSpan={6} className="px-3 py-4">
             <div className="grid gap-6 sm:grid-cols-2">
               {/* Datos del local */}
-              <form action={updateLocal} className="flex flex-col gap-2">
+              <form action={localAction} className="flex flex-col gap-2">
                 <p className="text-sm font-medium">Datos del local</p>
                 <input type="hidden" name="localId" value={l.id} />
                 <LabeledInput label="Nombre" name="name" defaultValue={l.name} required />
@@ -201,16 +211,28 @@ function FragmentRow({
                   name="currency"
                   defaultValue={l.currency}
                 />
-                <button className="mt-1 self-start rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white">
-                  Guardar datos
-                </button>
+                <div className="mt-1 flex items-center gap-3">
+                  <button
+                    disabled={localPending}
+                    className="self-start rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                  >
+                    {localPending ? "Guardando…" : "Guardar datos"}
+                  </button>
+                  {localState.error && (
+                    <p className="text-sm text-red-600" role="alert">
+                      {localState.error}
+                    </p>
+                  )}
+                  {localState.ok && !localState.error && (
+                    <p className="text-sm text-green-700" role="status">
+                      Guardado ✓
+                    </p>
+                  )}
+                </div>
               </form>
 
               {/* Suscripción */}
-              <form
-                action={updateSubscription}
-                className="flex flex-col gap-2"
-              >
+              <form action={subAction} className="flex flex-col gap-2">
                 <p className="text-sm font-medium">Suscripción</p>
                 <input type="hidden" name="localId" value={l.id} />
                 <label className="flex flex-col gap-1 text-sm">
@@ -245,9 +267,24 @@ function FragmentRow({
                     ))}
                   </select>
                 </label>
-                <button className="mt-1 self-start rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white">
-                  Guardar suscripción
-                </button>
+                <div className="mt-1 flex items-center gap-3">
+                  <button
+                    disabled={subPending}
+                    className="self-start rounded bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                  >
+                    {subPending ? "Guardando…" : "Guardar suscripción"}
+                  </button>
+                  {subState.error && (
+                    <p className="text-sm text-red-600" role="alert">
+                      {subState.error}
+                    </p>
+                  )}
+                  {subState.ok && !subState.error && (
+                    <p className="text-sm text-green-700" role="status">
+                      Guardado ✓
+                    </p>
+                  )}
+                </div>
               </form>
             </div>
           </td>
